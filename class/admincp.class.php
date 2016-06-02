@@ -14,8 +14,7 @@ class admincp
         $html = "";
 
         //Setup Template Variables.
-        foreach($templateListArray as $templateName)
-        {
+        foreach ($templateListArray as $templateName) {
             $$templateName = $db->getTemplate($templateName);
         }
 
@@ -30,23 +29,20 @@ class admincp
         $menuArray["user"] = array("icon" => "user", "name" => "Users");
 
         $z->runPlugin("admincp_index_menu", $menuArray);
-        
+
         //Control Body.$$body_par;
-        if(!$body) 
-        {
+        if (!$body) {
             eval("\$body = \"$admincp_index_body\";");
         }
-        
+
         //Default page, and load pages
         $navMenus = "";
-        foreach($menuArray as $method => $menu_settings)
-        {
+        foreach ($menuArray as $method => $menu_settings) {
             $icon = $menu_settings['icon'];
             $name = $menu_settings['name'];
             $current_nav = "";
 
-            if($z->getInput('m') == $method)
-            {
+            if ($z->getInput('m') == $method) {
                 $current_nav = "class=\"w3-green\"";
             }
 
@@ -57,12 +53,9 @@ class admincp
         $countUsers = $db->countRows("users");
         eval("\$user_count = \"$countUsers\";");
 
-        if($user->isAdmin)
-        {
+        if ($user->isAdmin) {
             eval("\$html .= \"$admin_index\";");
-        }
-        else
-        {
+        } else {
             $login = new login();
             $login->index();
         }
@@ -75,20 +68,22 @@ class admincp
     public function user()
     {
         global $classAction;
-        
-        switch ($classAction)
-        {
+
+        switch ($classAction) {
             case "list":
                 $this->index($this->user_list());
+                break;
+            case "edit":
+                $this->index($this->user_edit());
                 break;
             default:
                 $this->index($this->user_index());
         }
-        
+
         /* TODO LIST ALL USERS WITH A PAGINATION */
-        
+
     }
-    
+
     private function user_index()
     {
         global $db;
@@ -96,36 +91,34 @@ class admincp
         eval("\$return_html = \"$default_template\";");
         return $return_html;
     }
-    
+
     private function user_list($page = 0, $max = 20)
     {
         global $db;
-        
+
         //Lets Get All Users.
         $all_users_sql = "SELECT * FROM users";
         $all_users = $db->fetchQuery($all_users_sql);
-        
+
         $row_template = $db->getTemplate("admincp_user_rows");
         $default_template = $db->getTemplate("admincp_user_info_card");
         $user_rank_template = $db->getTemplate("user_rank");
-        
+
         $return_html = "";
         eval("\$return_html .= \"$row_template\";");
-        
+
         $row_card_count = 1;
-        
-        foreach($all_users as $index => $user)
-        {
+
+        foreach ($all_users as $index => $user) {
             //Reset Variables
             $user_rank = "";
-            
-            
+
+
             //Query All the Users Ranks, Display Ea
             $user_group_sql = "SELECT * FROM users_clan_groups WHERE `uid` = {$user['uid']}";
             $user_groups = $db->fetchQuery($user_group_sql);
-            
-            foreach($user_groups as $user_group)
-            {
+
+            foreach ($user_groups as $user_group) {
                 $user_clan_group_color = $db->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
                 $user_clan_group = $db->fetchItem("name", "clan", "WHERE `id` = " . $user_group['clan_id']);
                 $user_clan_rank_color = $db->fetchItem("color", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
@@ -133,21 +126,67 @@ class admincp
 
                 eval("\$user_rank .= \"$user_rank_template\";");
             }
-            
+
             //$user matchs db array.
             eval("\$return_html .= \"$default_template\";");
-            
-            if($row_card_count % 4 == 0)
-            {
+
+            if ($row_card_count % 4 == 0) {
                 $return_html .= "</div>";
                 eval("\$return_html .= \"$row_template\";");
             }
             $row_card_count++;
         }
         $return_html .= "</div>";
-        
+
         return $return_html;
     }
+
+    /*
+     * Edit Users
+     */
+    private function user_edit()
+    {
+        global $z, $db;
+
+        //If User Submitted Data?
+        if(isset($_POST['submit']))
+        {
+            $this->user_edit_save();
+        }
+
+        //User ID
+        $userID = $z->getInput('v');
+
+        //Load and Return Template.
+        $admincp_user_edits = $db->getTemplate("admincp_user_edit");
+
+        //Lets Get User Fields.
+        //Query All the User Info
+        $user_sql = "SELECT * FROM `users` WHERE `uid` = '{$userID}'";
+        $user = $db->fetchQuery($user_sql);
+        $user_edit = $user[0];
+
+        eval("\$return_html = \"$admincp_user_edits\";");
+        return $return_html;
+    }
+
+    private function user_edit_save()
+    {
+        global $z, $db;
+
+        $array = array(
+            "display_name" => $z->getInput('display_name'),
+            "avatar" => $z->getInput('avatar'),
+            "post_count" => $z->getInput('post_count'),
+            "thread_count" => $z->getInput('thread_count'),
+            "email" => $z->getInput('email')
+        );
+
+        $where = "WHERE uid = {$z->getInput('v')}";
+
+        $db->updateArray("users", $array, $where);
+    }
+
 
 }
 

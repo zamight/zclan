@@ -93,6 +93,36 @@ class db
 
         return $query->rowCount();
     }
+
+    public function updateArray($table, $array, $where)
+    {
+
+        $sqlName = "UPDATE {$table} SET ";
+        $first = true;
+
+        foreach($array as $name => $value)
+        {
+            if($first)
+            {
+                $sqlName .= $name;
+                $sqlName .= "='" . $value . "'";
+                $first = false;
+            }
+            else
+            {
+                $sqlName .= ", " . $name;
+                $sqlName .= "= " . "'" . $value . "'";
+            }
+        }
+
+        $sql = $sqlName . " " . $where;
+
+        $query = $this->db->prepare($sql);
+        $query->execute();
+
+
+        return $query->rowCount();
+    }
 	
 	public function fetchQuery($sql)
     {
