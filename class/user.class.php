@@ -19,7 +19,7 @@ class user
 			//Get Prividges.
 			//Set All Variables.
 			$membershipID = $db->fetchItem("group_id", "users_clan_groups", "WHERE `uid` = '{$fetchUid}'");
-			$membership = $db->fetchRow("SELECT isAdmin, isMod FROM membership WHERE id = '{$membershipID}' LIMIT 1");
+			$membership = $db->fetchRow("SELECT isAdmin, isMod FROM clan_groups WHERE id = '{$membershipID}' LIMIT 1");
 			
 			$a['membershipID'] = $membershipID;
 			$a['layout'] = $db->fetchItem("layout", "users", "WHERE uid = '{$fetchUid}'");
