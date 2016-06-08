@@ -16,10 +16,10 @@
 //Format - zforums.com/c=User&m=Settings
 
 session_start();
-
-include '/class/z.class.php';
-include '/class/db.class.php';
-include '/class/user.class.php';
+define("_DIR_", getcwd());
+include _DIR_ . '/class/z.class.php';
+include _DIR_ . '/class/db.class.php';
+include _DIR_ . '/class/user.class.php';
 
 //	Setup Variables
 $className = $z->getInput('c');
@@ -34,7 +34,7 @@ if(!$className)
 //	Autoload Classes Function.
 function autoloader($class)
 {
-    include '/class/' . $class . '.class.php';
+    include _DIR_ . '/class/' . $class . '.class.php';
 }
 
 spl_autoload_register('autoloader');
