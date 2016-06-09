@@ -166,6 +166,41 @@ class admincp
         $user = $db->fetchQuery($user_sql);
         $user_edit = $user[0];
 
+        //Reset Variables
+        $user_rank = "";
+        $user_edit_rank_template = $db->getTemplate("admincp_user_edit_clan_rank");
+
+        //Query All the Users Ranks, Display Ea
+        $user_group_sql = "SELECT * FROM users_clan_groups WHERE `uid` = {$userID}";
+        $user_groups = $db->fetchQuery($user_group_sql);
+
+        foreach ($user_groups as $user_group) {
+            $user_clan_group_color = $db->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
+            $user_clan_group = $db->fetchItem("name", "clan", "WHERE `id` = " . $user_group['clan_id']);
+            $user_clan_rank_color = $db->fetchItem("color", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
+            $user_clan_permission = $db->fetchItem("name", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
+
+            //Add Option Menu.
+            //Ranks
+            $ranks = array("Friend", "Recruit", "Corporal", "Sergeant", "Bronze", "Silver", "Gold", "Clan Owner",
+                "Founder", "Admin", "Moderator", "Remove");
+            $options = "";
+
+            foreach($ranks as $rank)
+            {
+                if($rank == $user_clan_permission)
+                {
+                    $options .= "<option value=\"{$rank}\" selected>{$rank}</option>";
+                }
+                else
+                {
+                    $options .= "<option value=\"{$rank}\">{$rank}</option>";
+                }
+            }
+            $options = "<select class=\"{$user_clan_rank_color}\" name=\"ranks[]\">{$options}</select>";
+            eval("\$user_rank .= \"$user_edit_rank_template\";");
+        }
+
         eval("\$return_html = \"$admincp_user_edits\";");
         return $return_html;
     }
