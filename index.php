@@ -31,6 +31,12 @@ if(!$className)
     $className = "login";
 }
 
+$url = _DIR_ . '/class/' . $className . '.class.php';
+if(!file_exists($url)) {
+    //Maybe It is just a clan name?
+    $className = 'clan';
+}
+
 //	Autoload Classes Function.
 function autoloader($class)
 {

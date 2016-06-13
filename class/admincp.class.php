@@ -222,7 +222,6 @@ class admincp
         $db->updateArray("users", $array, $where);
     }
 
-
 }
 
 
