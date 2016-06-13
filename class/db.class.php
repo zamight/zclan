@@ -3,9 +3,9 @@
 class db
 {
 
-    private $dsn = 'mysql:dbname=zforum;host=localhost';
-    private $dbuser = 'zamight';
-    private $dbpassword = 'password';
+    private $dsn = 'mysql:dbname=zforums;host=localhost';
+    private $dbuser = 'root';
+    private $dbpassword = 'mysql';
     public  $db = NULL;
 
    function __construct()

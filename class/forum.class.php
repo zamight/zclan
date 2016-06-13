@@ -4,9 +4,11 @@
 class forum
 {
 
+    private $forumName = FALSE;
+
     public function index($clanName = "Site")
     {
-        global $db, $classMethod;
+        global $db, $classMethod, $classAction, $z;
 
         $templateList = "forum_index";
         $templateListArray = explode(',', $templateList);
@@ -31,12 +33,23 @@ class forum
             $this->invalid_clan();
         }
 
-         // Set clan information for template.
+        //Lets See If A clan is set.
+        if($clanName == "Site") {
+            //If The Forum isn't default. See if A Forum Was Picked.
+            $this->forumName = $z->getInput('m');
+        }
+        else {
+            $this->forumName = $z->getInput('a');
+        }
 
-         // Display the default layout.
-
-        //Lets Setup and Display category Empty
-        $body = $this->index_categorys($clan['id']);
+        if(!empty($this->forumName)) {
+            //Display Forum Threads
+            $body = $this->index_forum($clan['id']);
+        }
+        else {
+            //Display Categories
+            $body = $this->index_categorys($clan['id']);
+        }
 
         eval("\$html .= \"$forum_index\";");
 
@@ -59,17 +72,52 @@ class forum
 
         foreach($categorys as $category) {
             //Lets Load Each Forum Now.
-            $forum_sql = 'SELECT * FROM forum WHERE categoryID = ' . $category['id'];
+            $forum_sql = 'SELECT * FROM forum WHERE categoryID = ' . $category['id'] . ' AND clanID = ' . $clanId;
             $forums = $db->fetchQuery($forum_sql);
 
             $forum_html = '';
 
             foreach($forums as $forum) {
+                //Clean Url.
+                $url = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $forum['name']);
                 eval("\$forum_html .= \"$tplForum\";");
             }
 
             eval("\$html .= \"$tpl\";"); 
         } 
+
+        return $html;
+    }
+
+    private function index_forum($clanId = 1)
+    {
+        global $db;
+
+        //Load Layout.
+        $tpl = $db->getTemplate("forum_threads");
+        $tplThread = $db->getTemplate("forum_thread_list");
+        $html = '';
+
+        $forumNameClean = str_replace('_', ' ', $this->forumName);
+
+        //Template is Loaded.
+        // Lets Loop All the Categorys.
+        $forum_sql = 'SELECT * FROM forum WHERE `name` = "' . $forumNameClean . '" AND `clanID` = ' . $clanId;
+        $forums = $db->fetchQuery($forum_sql);
+
+        foreach($forums as $forum) {
+            //Lets Load Each Forum Now.
+            $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'];
+            $threads = $db->fetchQuery($threads_sql);
+
+            $thread_html = '';
+
+            foreach($threads as $thread) {
+                eval("\$thread_html .= \"$tplThread\";");
+            }
+
+            eval("\$html .= \"$tpl\";");
+        }
 
         return $html;
     }
