@@ -102,7 +102,7 @@ class admincp
 
         $row_template = $db->getTemplate("admincp_user_rows");
         $default_template = $db->getTemplate("admincp_user_info_card");
-        $user_rank_template = $db->getTemplate("user_rank");
+        //$user_rank_template = $db->getTemplate("user_rank");
 
         $return_html = "";
         eval("\$return_html .= \"$row_template\";");
@@ -114,7 +114,7 @@ class admincp
             $user_rank = "";
 
 
-            //Query All the Users Ranks, Display Ea
+/*            //Query All the Users Ranks, Display Ea
             $user_group_sql = "SELECT * FROM users_clan_groups WHERE `uid` = {$user['uid']}";
             $user_groups = $db->fetchQuery($user_group_sql);
 
@@ -125,7 +125,9 @@ class admincp
                 $user_clan_permission = $db->fetchItem("name", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
 
                 eval("\$user_rank .= \"$user_rank_template\";");
-            }
+            }*/
+
+            $user_rank = $db->generateUserHtmlRanks($user['uid']);
 
             //$user matchs db array.
             eval("\$return_html .= \"$default_template\";");
@@ -149,8 +151,7 @@ class admincp
         global $z, $db;
 
         //If User Submitted Data?
-        if(isset($_POST['submit']))
-        {
+        if (isset($_POST['submit'])) {
             $this->user_edit_save();
         }
 
@@ -186,14 +187,10 @@ class admincp
                 "Founder", "Admin", "Moderator", "Remove");
             $options = "";
 
-            foreach($ranks as $rank)
-            {
-                if($rank == $user_clan_permission)
-                {
+            foreach ($ranks as $rank) {
+                if ($rank == $user_clan_permission) {
                     $options .= "<option value=\"{$rank}\" selected>{$rank}</option>";
-                }
-                else
-                {
+                } else {
                     $options .= "<option value=\"{$rank}\">{$rank}</option>";
                 }
             }

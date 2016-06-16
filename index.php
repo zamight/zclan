@@ -26,13 +26,12 @@ $className = $z->getInput('c');
 $classMethod = $z->getInput('m');
 $classAction = $z->getInput('a');
 
-if(!$className)
-{
+if (!$className) {
     $className = "login";
 }
 
 $url = _DIR_ . '/class/' . $className . '.class.php';
-if(!file_exists($url)) {
+if (!file_exists($url)) {
     //Maybe It is just a clan name?
     $className = 'clan';
 }
@@ -48,8 +47,7 @@ spl_autoload_register('autoloader');
 //	Create class and load method
 $class = new $className();
 
-if(!$classMethod || !method_exists($class, $classMethod))
-{
+if (!$classMethod || !method_exists($class, $classMethod)) {
     $classMethod = 'index';
 }
 $class->$classMethod();

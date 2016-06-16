@@ -153,6 +153,33 @@ class db
 
         return $result;
     }
+
+    public function generateUserHtmlRanks($userID = FALSE)
+    {
+        if(!userID) {
+            false;
+        }
+
+        $user_rank_template = $this->getTemplate("user_rank");
+
+        //Reset Variables
+        $user_rank = "";
+
+        //Query All the Users Ranks, Display Ea
+        $user_group_sql = "SELECT * FROM users_clan_groups WHERE `uid` = {$userID}";
+        $user_groups = $this->fetchQuery($user_group_sql);
+
+        foreach ($user_groups as $user_group) {
+            $user_clan_group_color = $this->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
+            $user_clan_group = $this->fetchItem("name", "clan", "WHERE `id` = " . $user_group['clan_id']);
+            $user_clan_rank_color = $this->fetchItem("color", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
+            $user_clan_permission = $this->fetchItem("name", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
+
+            eval("\$user_rank .= \"$user_rank_template\";");
+        }
+
+        return $user_rank;
+    }
 }
 
 $db = new db();

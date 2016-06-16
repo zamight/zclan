@@ -34,6 +34,8 @@ class user
 			}
 			
 			$a['isLoggedIn'] = true;
+
+			$this->arr['uid'] = $fetchUid;
 		}
 		
 		return false; 
