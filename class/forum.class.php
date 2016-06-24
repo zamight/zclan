@@ -1,14 +1,18 @@
 <?php
 
+//Include Traits
+include("/trait/shoutbox.trait.php");
 
 class forum
 {
+
+    use shoutbox;
 
     private $forumName = FALSE;
     private $threadTitle = FALSE;
     public $clan_name = FALSE;
 
-    public function index($clanName = "Site")
+    public function index($clanName = "site")
     {
         global $db, $classMethod, $classAction, $z;
 
@@ -25,6 +29,8 @@ class forum
          // If the $clanName is set
          // Then set the $clanID to to the clanNames ID.
 
+        $clanName = strtolower($clanName);
+
         $clan = $db->fetchQuery("SELECT * FROM `clan` WHERE `name` = '{$clanName}'");
         $clan = $clan[0];
 
@@ -35,8 +41,16 @@ class forum
             $this->invalid_clan();
         }
 
+        //Was a new shout submitted?
+        if($z->getInput('shout_new')) {
+            $this->shoutbox_add_message($clan['id']);
+        }
+
+        //Setup Shoubox
+        $shoutboxRows = $this->shoutbox_display($clan['id']);
+
         //Lets See If A clan is set.
-        if($clanName == "Site") {
+        if($clanName == "site") {
             //If The Forum isn't default. See if A Forum Was Picked.
             $this->forumName = $z->getInput('m');
             $this->threadTitle = $z->getInput('a');

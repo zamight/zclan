@@ -65,7 +65,6 @@ class db
 	//Insert a array into the table. The name of index must match database table names.
 	public function insertArray($table, $array)
     {
-		
 		$sqlName = "INSERT INTO {$table} (";
 		$sqlValue = ") VALUES (";
 		$first = true;
