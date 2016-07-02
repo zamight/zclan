@@ -213,6 +213,10 @@ class admincp
             "thread_count" => $z->getInput('thread_count'),
             "email" => $z->getInput('email')
         );
+        
+        if(strlen($z->getInput('password')) > 7) {
+            $array['password'] = password_hash($z->getInput('password'), PASSWORD_BCRYPT);
+        }
 
         $where = "WHERE uid = {$z->getInput('v')}";
 

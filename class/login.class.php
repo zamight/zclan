@@ -55,23 +55,26 @@ class login
         $username = $z->getInput("username");
         $password = $z->getInput("password");
 
-        $authorizeFetch = $db->fetchItem("uid", "users", "WHERE display_name = '{$username}' AND password = '{$password}'");
+        $authorizeFetch = $db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
 
         if($authorizeFetch != FALSE AND $authorizeFetch > 0)
         {
-            //Get Session Key
-            $session_key = session_id();
 
-            //Lets create the login session
-            $insert_array = array(
-                'uid' => $authorizeFetch,
-                'agent' => 'something',
-                'session_id' => $session_key
-            );
+            //Verify Password
+            if(password_verify($password, $authorizeFetch['password'])) {
+                //Get Session Key
+                $session_key = session_id();
 
-            if($db->insertArray('session', $insert_array) > 0)
-            {
-                header('Location: http://localhost/zclan/admincp');
+                //Lets create the login session
+                $insert_array = array(
+                    'uid' => $authorizeFetch['uid'],
+                    'agent' => 'something',
+                    'session_id' => $session_key
+                );
+
+                if ($db->insertArray('session', $insert_array) > 0) {
+                    header('Location: http://localhost/zclan/admincp');
+                }
             }
         }
 
