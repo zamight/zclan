@@ -175,7 +175,7 @@ class forum
 
         //Ight now Lets get the thread id.
         $thread = $db->fetchRow("SELECT * FROM `threads` WHERE `uid` = {$user->uid} ORDER BY `id` DESC");
-
+        $db->addThreadCountByUid($user->uid);
         $this->create_reply($thread['id']);
     }
 
@@ -230,6 +230,9 @@ class forum
             'uid' => $user->uid,
             'content' => $z->getInput('message')
         );
+
+        $db->addPostCountByUid($user->uid);
+        $db->addReplyCountByThreadId($threadId);
         $db->insertArray('post', $array);
     }
 

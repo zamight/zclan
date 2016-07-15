@@ -33,7 +33,10 @@ class login
 
         if($user->isLoggedIn)
         {
-            eval("\$login_index_forms = \"$login_index_loggedin\";");
+            //If User is logged in
+            //Send User to defualt forums.
+            header("Location: /zclan/forum");
+            exit();
         }
         else
         {
@@ -73,7 +76,7 @@ class login
                 );
 
                 if ($db->insertArray('session', $insert_array) > 0) {
-                    header('Location: http://localhost/zclan/admincp');
+                    header('Location: /zclan/forum');
                 }
             }
         }

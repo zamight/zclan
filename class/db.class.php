@@ -46,9 +46,28 @@ class db
         $query = $this->db->prepare("SELECT uid FROM users WHERE display_name = '{$username}' LIMIT 1");
         $query->execute();
 
-        $result = $query->fetch();
+        if($result = $query->fetch()) {
+            return $result['uid'];
+        }
+        else {
+            return false;
+        }
 
-        return $result['uid'];
+    }
+
+    //Return a uid by a display name
+    public function getIDbyEmail($email)
+    {
+        $query = $this->db->prepare("SELECT uid FROM users WHERE email = '{$email}' LIMIT 1");
+        $query->execute();
+
+        if($result = $query->fetch()) {
+            return $result['uid'];
+        }
+        else {
+            return false;
+        }
+
     }
 	
 	//Get One value from a table, colum, row
@@ -178,6 +197,35 @@ class db
         }
 
         return $user_rank;
+    }
+    public function addPostCountByUid($uid)
+    {
+        if(!empty($uid)) {
+            $query = $this->db->prepare("UPDATE users SET post_count = post_count + 1 WHERE uid = ?");
+            $query->bindValue(1, $uid, PDO::PARAM_INT);
+            $query->execute();
+        }
+        return false;
+    }
+
+    public function addThreadCountByUid($uid)
+    {
+        if(!empty($uid)) {
+            $query = $this->db->prepare("UPDATE users SET thread_count = thread_count + 1 WHERE uid = ?");
+            $query->bindValue(1, $uid, PDO::PARAM_INT);
+            $query->execute();
+        }
+        return false;
+    }
+
+    public function addReplyCountByThreadId($threadId)
+    {
+        if(!empty($threadId)) {
+            $query = $this->db->prepare("UPDATE threads SET reply_count = reply_count + 1 WHERE id = ?");
+            $query->bindValue(1, $threadId, PDO::PARAM_INT);
+            $query->execute();
+        }
+        return false;
     }
 }
 
