@@ -14,9 +14,9 @@
 //Format - zforums.com/c=User&m=Settings
 session_start();
 define("_DIR_", getcwd());
-include _DIR_ . '/class/z.class.php';
-include _DIR_ . '/class/db.class.php';
-include _DIR_ . '/class/user.class.php';
+include _DIR_ . '/z.class.php';
+include _DIR_ . '/db.class.php';
+include _DIR_ . '/user.class.php';
 date_default_timezone_set("UTC");
 //	Setup Variables
 $className = $z->getInput('c');

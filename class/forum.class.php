@@ -2,11 +2,13 @@
 
 //Include Traits
 include("/trait/shoutbox.trait.php");
+include("/trait/header.trait.php");
 
 class forum
 {
 
     use shoutbox;
+    use header;
 
     private $forumName = FALSE;
     private $threadTitle = FALSE;
@@ -85,9 +87,13 @@ class forum
             $body = $this->index_categorys($clan['id']);
         }
 
-        eval("\$html .= \"$forum_index\";");
+        //eval("\$html .= \"$forum_index\";");
 
-        echo $html;
+        //echo $html;
+
+        eval("\$content .= \"$forum_index\";");
+
+        print $this->build($clanName, $content);
     }
 
     private function index_categorys($clanId = 1)
