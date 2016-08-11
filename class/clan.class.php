@@ -12,6 +12,9 @@ class clan
         if($clanPage == 'forum') {
             $this->forum();
         }
+        if($clanPage == 'message') {
+            $this->message();
+        }
 
     }
 
@@ -19,6 +22,13 @@ class clan
     {
         global $z;
         $forum = new forum();
+        $forum->index($z->getInput('c'));
+    }
+
+    public function message()
+    {
+        global $z;
+        $forum = new message();
         $forum->index($z->getInput('c'));
     }
 }

@@ -3,12 +3,21 @@
 class register
 {
 
+
+    private $formItems = array(
+    "username" => "Username",
+    "email" => "Email",
+    "password" => "Password",
+    "retype_password" => "Retype Password",
+    "rsn" => "RSN",
+    );
+
     public function index()
     {
         //{$login_index_forms} For forms/msgs.
         global $user, $db, $z, $getActions, $user;
 
-        $templateList = 'register_index';
+        $templateList = 'register_index,register_success';
         $templateListArray = explode(',', $templateList);
 
         $html = "";
@@ -18,16 +27,24 @@ class register
             $$templateName = $db->getTemplate($templateName);
         }
 
+        $display = $register_index;
+
         //Verify Registeration
         $warnings = '';
         if($z->getInput('registeration_submitted')) {
             $showAnyRegisterationErrors = $this->anyRegisterationWarnings();
             if ($showAnyRegisterationErrors) {
                 $warnings = $showAnyRegisterationErrors;
+
+            }
+            else {
+                if($this->createRegisteration()) {
+                    $display = $register_success;
+                }
             }
         }
 
-        eval("\$html .= \"$register_index\";");
+        eval("\$html .= \"$display\";");
 
         print $html;
     }
@@ -39,15 +56,7 @@ class register
         $warnings = array();
         $warning_tempalte = $db->getTemplate('warning_red_alert');
 
-        $formItems = array(
-            "username" => "Username",
-            "email" => "Email",
-            "password" => "Password",
-            "retype_password" => "Retype Password",
-            "rsn" => "RSN",
-        );
-
-        foreach($formItems as $names => $labels) {
+        foreach($this->formItems as $names => $labels) {
             $$names = $z->getInput($names); //Set all as Variables.
             if(!$$names) {
                 $warnings[] = $labels . " Field Is Required";
@@ -85,6 +94,30 @@ class register
             $warning = implode("<br />", $warnings);
             eval("\$return .= \"$warning_tempalte\";");
             return $return;
+        }
+
+        return false;
+    }
+
+    private function createRegisteration()
+    {
+        global $z, $db;
+        foreach($this->formItems as $names => $labels) {
+            $$names = $z->getInput($names); //Set all as Variables.
+        }
+
+        $insertArray = array(
+            'display_name' => $username,
+            'password' => password_hash($password, PASSWORD_BCRYPT),
+            'layout' => 'w3_',
+            'avatar' => 'http://services.runescape.com/m=rswikiimages/en/2012/12/chat-29024951.gif',
+            'post_count' => 0,
+            'thread_count' => 0,
+            'email' => $email
+        );
+
+        if($db->insertArray('users', $insertArray)) {
+            return true;
         }
 
         return false;
