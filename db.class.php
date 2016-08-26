@@ -214,6 +214,7 @@ class db
             $query = $this->db->prepare("UPDATE users SET thread_count = thread_count + 1 WHERE uid = ?");
             $query->bindValue(1, $uid, PDO::PARAM_INT);
             $query->execute();
+            return true;
         }
         return false;
     }
@@ -228,5 +229,3 @@ class db
         return false;
     }
 }
-
-$db = new db();

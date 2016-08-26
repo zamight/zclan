@@ -5,44 +5,40 @@ class post
 
     private $action = FALSE;
     private $postId = FALSE;
+    private $z = null;
+    
+    public function __construct($z)
+    {
+        $this->z = $z;
+    }
 
-    public function index($clanName = "site")
+    public function index()
     {
 
     }
 
-    public function edit($clanName = "site")
+    public function edit()
     {
-        global $db, $classMethod, $classAction, $z;
-
+        $clanName = $this->z->url_param['clan_name'];
         $templateList = "post_edit_index";
         $templateListArray = explode(',', $templateList);
 
         //Setup Template Variables.
         foreach ($templateListArray as $templateName) {
-            $$templateName = $db->getTemplate($templateName);
+            $$templateName = $this->z->db->getTemplate($templateName);
         }
 
-        //Lets Redirect.
-        //Any Value?
-        //Lets Check to see if its the editor.
-        //Lets See If A clan is set.
-        if($clanName == "site") {
-            //If The Forum isn't default. See if A Forum Was Picked.
-            $this->action = $z->getInput('m');
-            $this->postId = $z->getInput('a');
-        }
-        else {
-            $this->action = $z->getInput('a');
-            $this->postId = $z->getInput('v');
-        }
+
+        //If The Forum isn't default. See if A Forum Was Picked.
+        $this->action = $this->z->url_param[1];
+        $this->postId = $this->z->url_param[2];
 
         if($this->postUpdated()) {
             die("updated");
         }
         
         //Get the Msg and display in textarea.
-        $message = $db->fetchItem("content", "post", "WHERE `id` = '{$this->postId}'");
+        $message = $this->z->db->fetchItem("content", "post", "WHERE `id` = '{$this->postId}'");
 
         eval("\$html .= \"$post_edit_index\";");
 
@@ -51,13 +47,11 @@ class post
 
     private function postUpdated()
     {
-        global $z, $db, $user;
-
         //Was Form submitted?
-        if($z->getInput('message'))
+        if($this->z->getInput('message'))
         {
-            $table = array("content" => $z->getInput('message'));
-            if($db->updateArray('post', $table, "WHERE `id` = {$this->postId} AND `uid` = {$user->uid}") > 0)
+            $table = array("content" => $this->z->getInput('message'));
+            if($this->z->db->updateArray('post', $table, "WHERE `id` = {$this->postId} AND `uid` = {$this->z->user->uid}") > 0)
             {
                 return true;
             }

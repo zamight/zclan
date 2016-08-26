@@ -7,24 +7,28 @@ class message
     use header;
 
     private $clanName;
+    private $z = null;
 
-    public function index($clanName = "site")
+    public function __construct($z)
     {
-        $this->clanName = $clanName;
+        $this->z = $z;
+    }
+
+    public function index()
+    {
+        $this->clanName = $this->z->url_param['clan_name'];
         $this->listMessages();
         //print $this->build();
     }
 
     private function listMessages()
     {
-        global $db, $user;
-
         $templateList = 'message_list,message_index';
         $templateListArray = explode(',', $templateList);
 
         //Setup Template Variables.
         foreach ($templateListArray as $templateName) {
-            $$templateName = $db->getTemplate($templateName);
+            $$templateName = $this->z->db->getTemplate($templateName);
         }
 
         $userCache = array();
@@ -32,13 +36,13 @@ class message
         $unreadTpl = '';
 
         //Load All Msgs For User.
-        $msgSql = $db->fetchQuery("SELECT * FROM `message` WHERE `toUid` = {$user->uid}");
+        $msgSql = $this->z->db->fetchQuery("SELECT * FROM `message` WHERE `toUid` = {$this->z->user->uid}");
 
         foreach($msgSql as $message) {
 
             //Has the user been cached?
             if(!array_key_exists($message['fromUid'], $userCache)) {
-                $userCache[$message['fromUid']] = $db->fetchRow("SELECT * FROM `users` WHERE `uid` = {$message['fromUid']}");
+                $userCache[$message['fromUid']] = $this->z->db->fetchRow("SELECT * FROM `users` WHERE `uid` = {$message['fromUid']}");
             }
 
             $author = $userCache[$message['fromUid']];

@@ -2,17 +2,20 @@
 
 class clan
 {
+    private $z = null;
+
+    public function __construct($z)
+    {
+        $this->z = $z;
+    }
+
     public function index()
     {
-        global $z;
-        $clanName = $z->getInput('c');
-        $clanPage = $z->getInput('m');
-        $clanAction = $z->getInput('a');
-
-        if($clanPage == 'forum') {
+        $class = $this->z->url_param[0];
+        if($class == 'forum') {
             $this->forum();
         }
-        if($clanPage == 'message') {
+        if($class == 'message') {
             $this->message();
         }
 
@@ -21,14 +24,14 @@ class clan
     public function forum()
     {
         global $z;
-        $forum = new forum();
+        $forum = new forum($this->z);
         $forum->index($z->getInput('c'));
     }
 
     public function message()
     {
         global $z;
-        $forum = new message();
+        $forum = new message($this->z);
         $forum->index($z->getInput('c'));
     }
 }

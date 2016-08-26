@@ -1,9 +1,5 @@
 RewriteEngine On 
-RewriteBase /zclan/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
-RewriteRule ^([^/.]+)$ index.php?c=$1
-RewriteRule ^([^/.]+)/([^/.]+)$ index.php?c=$1&m=$2
-RewriteRule ^([^/.]+)/([^/.]+)/([^/.]+)$ index.php?c=$1&m=$2&a=$3
-RewriteRule ^([^/.]+)/([^/.]+)/([^/.]+)/([^/.]+)$ index.php?c=$1&m=$2&a=$3&v=$4
+RewriteRule (.*)$ index.php?c=$1

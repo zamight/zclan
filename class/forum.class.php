@@ -13,11 +13,15 @@ class forum
     private $forumName = FALSE;
     private $threadTitle = FALSE;
     public $clan_name = FALSE;
-
-    public function index($clanName = "site")
+    private $z = null;
+    
+    public function __construct($z)
     {
-        global $db, $classMethod, $classAction, $z;
+        $this->z = $z;
+    }
 
+    public function index()
+    {
         $templateList = "forum_index";
         $templateListArray = explode(',', $templateList);
 
@@ -25,15 +29,14 @@ class forum
 
         //Setup Template Variables.
         foreach ($templateListArray as $templateName) {
-            $$templateName = $db->getTemplate($templateName);
+            $$templateName = $this->z->db->getTemplate($templateName);
         }
 
          // If the $clanName is set
          // Then set the $clanID to to the clanNames ID.
+        $clanName = strtolower($this->z->url_param['clan_name']);
 
-        $clanName = strtolower($clanName);
-
-        $clan = $db->fetchQuery("SELECT * FROM `clan` WHERE `name` = '{$clanName}'");
+        $clan = $this->z->db->fetchQuery("SELECT * FROM `clan` WHERE `name` = '{$clanName}'");
         $clan = $clan[0];
 
          // If the clan cannot be found
@@ -44,31 +47,24 @@ class forum
         }
 
         //Was a new shout submitted?
-        if($z->getInput('shout_new')) {
+        if($this->z->getInput('shout_new')) {
             $this->shoutbox_add_message($clan['id']);
         }
 
         //Setup Shoubox
         $shoutboxRows = $this->shoutbox_display($clan['id']);
 
-        //Lets See If A clan is set.
-        if($clanName == "site") {
-            //If The Forum isn't default. See if A Forum Was Picked.
-            $this->forumName = $z->getInput('m');
-            $this->threadTitle = $z->getInput('a');
-        }
-        else {
-            $this->forumName = $z->getInput('a');
-            $this->threadTitle = $z->getInput('v');
-        }
+
+        $this->forumName = $this->z->url_param[1];
+        $this->threadTitle = $this->z->url_param[2];
 
         $this->clan_name = str_replace('_', ' ', $this->forumName);
 
-        if($z->getInput('title')) {
+        if($this->z->getInput('title')) {
             $this->create_thread();
         }
 
-        if($z->getInput('new_thread')) {
+        if($this->z->getInput('new_thread')) {
             $threadID = explode('-', $this->threadTitle);
             $threadID = $threadID[1];
             $this->create_reply($threadID);
@@ -98,22 +94,20 @@ class forum
 
     private function index_categorys($clanId = 1)
     {
-	global $db;
-
 	//Load Layout.
-        $tpl = $db->getTemplate("forum_index_category");
-        $tplForum = $db->getTemplate("forum_index_forum");
+        $tpl = $this->z->db->getTemplate("forum_index_category");
+        $tplForum = $this->z->db->getTemplate("forum_index_forum");
         $html = '';
 
         //Template is Loaded.
         // Lets Loop All the Categorys.
         $category_sql = 'SELECT * FROM category WHERE clanID = ' . $clanId;
-        $categorys = $db->fetchQuery($category_sql);
+        $categorys = $this->z->db->fetchQuery($category_sql);
 
         foreach($categorys as $category) {
             //Lets Load Each Forum Now.
             $forum_sql = 'SELECT * FROM forum WHERE categoryID = ' . $category['id'] . ' AND clanID = ' . $clanId;
-            $forums = $db->fetchQuery($forum_sql);
+            $forums = $this->z->db->fetchQuery($forum_sql);
 
             $forum_html = '';
 
@@ -131,11 +125,9 @@ class forum
 
     private function index_forum($clanId = 1)
     {
-        global $db;
-
         //Load Layout.
-        $tpl = $db->getTemplate("forum_threads");
-        $tplThread = $db->getTemplate("forum_thread_list");
+        $tpl = $this->z->db->getTemplate("forum_threads");
+        $tplThread = $this->z->db->getTemplate("forum_thread_list");
         $html = '';
         $url = '';
 
@@ -143,12 +135,12 @@ class forum
         //Template is Loaded.
         // Lets Loop All the Categorys.
         $forum_sql = 'SELECT * FROM forum WHERE `name` = "' . $this->clan_name . '" AND `clanID` = ' . $clanId;
-        $forums = $db->fetchQuery($forum_sql);
+        $forums = $this->z->db->fetchQuery($forum_sql);
 
         foreach($forums as $forum) {
             //Lets Load Each Forum Now.
             $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'] . ' ORDER BY `id` DESC';
-            $threads = $db->fetchQuery($threads_sql);
+            $threads = $this->z->db->fetchQuery($threads_sql);
             //die(print_r($threads));
             $thread_html = '';
 
@@ -167,28 +159,24 @@ class forum
 
     private function create_thread()
     {
-        global $db, $user, $z;
-
         $name = str_replace('_', ' ', $this->forumName);
 
         $array = array(
-            'forumID' => $db->fetchItem("id", "forum", "WHERE name = '{$name}'"),
-            'uid' => $user->uid,
-            'title' => $z->getInput('title'),
+            'forumID' => $this->z->db->fetchItem("id", "forum", "WHERE name = '{$name}'"),
+            'uid' => $this->z->user->uid,
+            'title' => $this->z->getInput('title'),
             'enabled' => 1
         );
-        $db->insertArray('threads', $array);
+        $this->z->db->insertArray('threads', $array);
 
         //Ight now Lets get the thread id.
-        $thread = $db->fetchRow("SELECT * FROM `threads` WHERE `uid` = {$user->uid} ORDER BY `id` DESC");
-        $db->addThreadCountByUid($user->uid);
+        $thread = $this->z->db->fetchRow("SELECT * FROM `threads` WHERE `uid` = {$user->uid} ORDER BY `id` DESC");
+        $this->z->db->addThreadCountByUid($user->uid);
         $this->create_reply($thread['id']);
     }
 
     private function display_posts()
     {
-        global $db;
-
         //Include the BBCode Engine
         include("/nbbc-1.4.5/nbbc.php");
         $bbcode = new BBCode();
@@ -200,25 +188,25 @@ class forum
         $html = '';
 
         //Load Basic Templates
-        $forum_post_tpl = $db->getTemplate("forum_posts");
-        $forum_posts_list_tpl = $db->getTemplate("forum_posts_list");
+        $forum_post_tpl = $this->z->db->getTemplate("forum_posts");
+        $forum_posts_list_tpl = $this->z->db->getTemplate("forum_posts_list");
 
         //set Title URL
         $backUrl = 'javascript:history.go(-1)';
 
         //Load The Thread Information.
-        $thread = $db->fetchRow("SELECT * FROM `threads` WHERE `id` = '{$threadId}'");
+        $thread = $this->z->db->fetchRow("SELECT * FROM `threads` WHERE `id` = '{$threadId}'");
 
         //Load The Forum Info.
         //Need Banner_url, Name, Description.
-        $forum = $db->fetchRow("SELECT * FROM `forum` WHERE `id` = '{$thread['forumID']}'");
+        $forum = $this->z->db->fetchRow("SELECT * FROM `forum` WHERE `id` = '{$thread['forumID']}'");
 
         //Post SQL and Loop.
-        $posts = $db->fetchQuery("SELECT * FROM `post` WHERE `threadID` = '{$threadId}'");
+        $posts = $this->z->db->fetchQuery("SELECT * FROM `post` WHERE `threadID` = '{$threadId}'");
 
         foreach($posts as $post) {
-            $users = $db->fetchRow("SELECT * FROM `users` WHERE `uid` = '{$post['uid']}'");
-            $ranks = $db->generateUserHtmlRanks($post['uid']);
+            $users = $this->z->db->fetchRow("SELECT * FROM `users` WHERE `uid` = '{$post['uid']}'");
+            $ranks = $this->z->db->generateUserHtmlRanks($post['uid']);
             $post['content'] = $bbcode->Parse($post['content']);
             eval("\$post_html .= \"$forum_posts_list_tpl\";");
         }
@@ -229,17 +217,15 @@ class forum
 
     private function create_reply($threadId)
     {
-        global $user, $db, $z;
-
         $array = array(
             'threadID' => $threadId,
-            'uid' => $user->uid,
-            'content' => $z->getInput('message')
+            'uid' => $this->z->user->uid,
+            'content' => $this->z->getInput('message')
         );
 
-        $db->addPostCountByUid($user->uid);
-        $db->addReplyCountByThreadId($threadId);
-        $db->insertArray('post', $array);
+        $this->z->db->addPostCountByUid($this->z->user->uid);
+        $this->z->db->addReplyCountByThreadId($threadId);
+        $this->z->db->insertArray('post', $array);
     }
 
     private function invalid_clan()

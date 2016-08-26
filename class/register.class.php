@@ -3,6 +3,7 @@
 class register
 {
 
+    private $z = null;
 
     private $formItems = array(
     "username" => "Username",
@@ -12,11 +13,13 @@ class register
     "rsn" => "RSN",
     );
 
+    public function __construct($z)
+    {
+        $this->z = $z;
+    }
+
     public function index()
     {
-        //{$login_index_forms} For forms/msgs.
-        global $user, $db, $z, $getActions, $user;
-
         $templateList = 'register_index,register_success';
         $templateListArray = explode(',', $templateList);
 
@@ -24,14 +27,14 @@ class register
 
         //Setup Template Variables.
         foreach ($templateListArray as $templateName) {
-            $$templateName = $db->getTemplate($templateName);
+            $$templateName = $this->z->db->getTemplate($templateName);
         }
 
         $display = $register_index;
 
         //Verify Registeration
         $warnings = '';
-        if($z->getInput('registeration_submitted')) {
+        if($this->z->getInput('registeration_submitted')) {
             $showAnyRegisterationErrors = $this->anyRegisterationWarnings();
             if ($showAnyRegisterationErrors) {
                 $warnings = $showAnyRegisterationErrors;
@@ -51,25 +54,23 @@ class register
 
     private function anyRegisterationWarnings()
     {
-        global $z, $db;
-
         $warnings = array();
-        $warning_tempalte = $db->getTemplate('warning_red_alert');
+        $warning_tempalte = $this->z->db->getTemplate('warning_red_alert');
 
         foreach($this->formItems as $names => $labels) {
-            $$names = $z->getInput($names); //Set all as Variables.
+            $$names = $this->z->getInput($names); //Set all as Variables.
             if(!$$names) {
                 $warnings[] = $labels . " Field Is Required";
             }
         }
 
         //Does the username exist?
-        if($db->getIDbyUsername($username)) {
+        if($this->z->db->getIDbyUsername($username)) {
             $warnings[] = "Username already taken";
         }
         
         //Does the email exist?
-        if($db->getIDbyEmail($email)) {
+        if($this->z->db->getIDbyEmail($email)) {
             $warnings[] = "Email already taken";
         }
 
@@ -79,7 +80,7 @@ class register
         }
 
         //Is the email address long enough?
-        if(strlen(($password) < 6)) {
+        if(strlen(($password) > 6)) {
             $warnings[] = "Password is not long enough";
         }
 
@@ -101,9 +102,8 @@ class register
 
     private function createRegisteration()
     {
-        global $z, $db;
         foreach($this->formItems as $names => $labels) {
-            $$names = $z->getInput($names); //Set all as Variables.
+            $$names = $this->z->getInput($names); //Set all as Variables.
         }
 
         $insertArray = array(
@@ -116,7 +116,7 @@ class register
             'email' => $email
         );
 
-        if($db->insertArray('users', $insertArray)) {
+        if($this->z->db->insertArray('users', $insertArray)) {
             return true;
         }
 
