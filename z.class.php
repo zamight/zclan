@@ -3,8 +3,10 @@
 /**
  * Class settings
  */
-class settings
+class z
 {
+
+	public $setting_array = array();
 
 	/**
 	 * @var array
@@ -29,6 +31,12 @@ class settings
 			}
 			return $_POST[$get];
 		}
+	}
+
+	public function __construct()
+	{
+		//$this->setting_array['db'] = new db(this);
+		//$this->setting_array['user'] = new user(this);
 	}
 
 	/**
@@ -60,6 +68,18 @@ class settings
 		$this->pluginList[$index][] = $func_plugin;
 	}
 
-}
+	public function __set($name, $value)
+	{
+		$this->setting_array[$name] = $value;
+	}
 
-$z = new settings();
+	public function __get($name)
+	{
+		if(array_key_exists($name, $this->setting_array)) {
+			return $this->setting_array[$name];
+		}
+
+		return null;
+	}
+
+}

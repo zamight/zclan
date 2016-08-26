@@ -6,25 +6,23 @@ trait shoutbox
 
     private function shoutbox_display($clanId = 1)
     {
-        global $db;
-
         if(!$this->shoutbox_display_limit) {
             $this->shoutbox_set_display_limit(); //Default is 5.
         }
         
         //Load The Template
-        $template = $db->getTemplate('shoutbox_row');
+        $template = $this->z->db->getTemplate('shoutbox_row');
 
         //Lets Extract The shouts.
         $shoutboxSql = "SELECT * FROM shoutbox WHERE clanid = {$clanId} ORDER BY id DESC LIMIT 5";
-        $shoutboxQuery = $db->fetchQuery($shoutboxSql);
+        $shoutboxQuery = $this->z->db->fetchQuery($shoutboxSql);
 
         $html = '';
 
         //Loop through each entry.
         foreach($shoutboxQuery as $shoutbox) {
-            $displayName = $db->getUsernameByID($shoutbox['uid']);
-            $avatar = $db->fetchItem("avatar", "users", "WHERE uid = '{$shoutbox['uid']}'");
+            $displayName = $this->z->db->getUsernameByID($shoutbox['uid']);
+            $avatar = $this->z->db->fetchItem("avatar", "users", "WHERE uid = '{$shoutbox['uid']}'");
 
             eval("\$html .= \"$template\";");
         }
@@ -47,7 +45,7 @@ trait shoutbox
             'uid' => $user->uid,
             'clanid' => $clanId,
             'timestamp' => time(),
-            'message' => $z->getInput('shout_message')
+            'message' => $this->z->getInput('shout_message')
         );
 
         $db->insertArray($table, $array);

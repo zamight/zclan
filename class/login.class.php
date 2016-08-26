@@ -2,11 +2,15 @@
 
 class login
 {
+    private $z = null;
+
+    public function __construct($z)
+    {
+        $this->z = $z;
+    }
 
     public function index()
     {
-        //{$login_index_forms} For forms/msgs.
-        global $user, $db, $z, $getActions, $user;
 
         $templateList = 'login_index,login_index_form,login_index_loggedin,login_index_incorrect';
         $templateListArray = explode(',', $templateList);
@@ -16,10 +20,10 @@ class login
         //Setup Template Variables.
         foreach($templateListArray as $templateName)
         {
-            $$templateName = $db->getTemplate($templateName);
+            $$templateName = $this->z->db->getTemplate($templateName);
         }
 
-        $z->runPlugin("login_index_start");
+        $this->z->runPlugin("login_index_start");
 
 
         if(empty($_POST['submit']))
@@ -31,7 +35,7 @@ class login
             eval("\$login_index_incorrect = \"$login_index_incorrect\";");
         }
 
-        if($user->isLoggedIn)
+        if($this->z->user->isLoggedIn)
         {
             //If User is logged in
             //Send User to defualt forums.
@@ -45,20 +49,18 @@ class login
 
         eval("\$html .= \"$login_index\";");
 
-        $z->runPlugin("login_index_end", $html);
+        $this->z->runPlugin("login_index_end", $html);
 
         print $html;
     }
 
     public function authenticate()
     {
-        global $z, $db;
-        //Grab Variables.
 
-        $username = $z->getInput("username");
-        $password = $z->getInput("password");
+        $username = $this->z->getInput("username");
+        $password = $this->z->getInput("password");
 
-        $authorizeFetch = $db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
+        $authorizeFetch = $this->z->db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
 
         if($authorizeFetch != FALSE AND $authorizeFetch > 0)
         {
@@ -75,7 +77,7 @@ class login
                     'session_id' => $session_key
                 );
 
-                if ($db->insertArray('session', $insert_array) > 0) {
+                if ($this->z->db->insertArray('session', $insert_array) > 0) {
                     header('Location: /zclan/forum');
                 }
             }

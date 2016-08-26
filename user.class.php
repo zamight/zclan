@@ -5,12 +5,13 @@ class user
 	
 	//Variables.
 	private $arr = array();
+	private $z = null;
 	
-	function __construct()
+	function __construct($z)
 	{
-		global $db;
+		$this->z = $z;
 		$session_id = session_id();
-        $fetchUid = $db->fetchItem("uid", "session", "WHERE session_id = '{$session_id}'");
+        $fetchUid = $this->z->db->fetchItem("uid", "session", "WHERE session_id = '{$session_id}'");
 		
 		$a = &$this->arr;
 
@@ -18,11 +19,11 @@ class user
 		{
 			//Get Prividges.
 			//Set All Variables.
-			$membershipID = $db->fetchItem("group_id", "users_clan_groups", "WHERE `uid` = '{$fetchUid}'");
-			$membership = $db->fetchRow("SELECT isAdmin, isMod FROM clan_groups WHERE id = '{$membershipID}' LIMIT 1");
+			$membershipID = $this->z->db->fetchItem("group_id", "users_clan_groups", "WHERE `uid` = '{$fetchUid}'");
+			$membership = $this->z->db->fetchRow("SELECT isAdmin, isMod FROM clan_groups WHERE id = '{$membershipID}' LIMIT 1");
 			
 			$a['membershipID'] = $membershipID;
-			$a['layout'] = $db->fetchItem("layout", "users", "WHERE uid = '{$fetchUid}'");
+			$a['layout'] = $this->z->db->fetchItem("layout", "users", "WHERE uid = '{$fetchUid}'");
 			
 			if($membership['isAdmin'] == 1)
 			{
@@ -52,9 +53,7 @@ class user
 	//Return: Boolean
 	public function authenticate($uid, $password)
 	{
-		global $db;
-		
-		$fetch = $db->fetchItem("display_name", "users", "WHERE uid = '{$uid}' AND password = '{$password}'");
+		$fetch = $this->z->db->fetchItem("display_name", "users", "WHERE uid = '{$uid}' AND password = '{$password}'");
 
 		if($fetch)
 		{
@@ -77,5 +76,3 @@ class user
 	}
 	
 }
-
-$user = new user();
