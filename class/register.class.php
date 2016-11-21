@@ -80,7 +80,7 @@ class register
         }
 
         //Is the email address long enough?
-        if(strlen(($password) > 6)) {
+        if(strlen(($password) < 6)) {
             $warnings[] = "Password is not long enough";
         }
 
