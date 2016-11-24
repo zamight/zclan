@@ -6,7 +6,7 @@ class db
     private $dsn = 'mysql:dbname=zforums;host=localhost';
     private $dbuser = 'root';
     private $dbpassword = 'mysql';
-    public  $db = NULL;
+    private $db = 'mysql';
 
    function __construct()
     {
@@ -87,27 +87,33 @@ class db
 		$sqlName = "INSERT INTO {$table} (";
 		$sqlValue = ") VALUES (";
 		$first = true;
-		
+        $counter = 1;
+
 		foreach($array as $name => $value)
 		{
 			if($first)
 			{
 				$sqlName .= $name;
-				$sqlValue .= "'" . $value . "'";
+				$sqlValue .= "?";
 				$first = false;
 			}
 			else
 			{
 				$sqlName .= "," . $name;
-				$sqlValue .= "," . " '" . $value . "'";
+				$sqlValue .= "," . "?";
 			}
 		}
-		
-		$sql = $sqlName . $sqlValue . ")";
 
+        $sql = $sqlName . $sqlValue . ")";
         $query = $this->db->prepare($sql);
-        $query->execute();
+        foreach($array as $name => $value)
+        {
+            $query->bindParam($counter, $array[$name]);
+            $counter++;
+        }
 
+
+        $query->execute();
 
         return $query->rowCount();
     }

@@ -17,8 +17,15 @@ class message
     public function index()
     {
         $this->clanName = $this->z->url_param['clan_name'];
-        $this->listMessages();
-        //print $this->build();
+
+        // Direct User To Correct Function
+        switch ($this->z->url_param[1]) {
+            case "view":
+                $this->showMessage();
+                break;
+            default:
+                $this->listMessages();
+        }
     }
 
     private function listMessages()
@@ -36,7 +43,7 @@ class message
         $unreadTpl = '';
 
         //Load All Msgs For User.
-        $msgSql = $this->z->db->fetchQuery("SELECT * FROM `message` WHERE `toUid` = {$this->z->user->uid}");
+        $msgSql = $this->z->db->fetchQuery("SELECT * FROM `message` WHERE `toUid` = {$this->z->user->uid} ORDER BY `id` DESC");
 
         foreach($msgSql as $message) {
 
@@ -46,6 +53,11 @@ class message
             }
 
             $author = $userCache[$message['fromUid']];
+
+            // Truncate message preview if to long
+            if(strlen($message['message']) > 100) {
+                $message['message'] = substr($message['message'], 0, 100) . "...";
+            }
 
             //If Msg has been viewed.
             if($message['viewed']) {
@@ -66,4 +78,16 @@ class message
 
         print $this->build($this->clanName, $content);
     }
+
+    private function showMessage() {
+        // Initialize Template Variables
+        $templateList = 'message_list,message_index';
+        $templateListArray = explode(',', $templateList);
+
+        //Setup Template Variables.
+        foreach ($templateListArray as $templateName) {
+            $$templateName = $this->z->db->getTemplate($templateName);
+        }
+    }
+
 }

@@ -3,10 +3,15 @@
 class admincp
 {
 
+    private $z = null;
+
+    public function __construct($z)
+    {
+        $this->z = $z;
+    }
+
     public function index($body = FALSE)
     {
-        //{$login_index_forms} For forms/msgs.
-        global $db, $z, $user, $classMethod;
 
         $templateList = "admin_index,admincp_index_body,admincp_nav_link";
         $templateListArray = explode(',', $templateList);
@@ -15,10 +20,10 @@ class admincp
 
         //Setup Template Variables.
         foreach ($templateListArray as $templateName) {
-            $$templateName = $db->getTemplate($templateName);
+            $$templateName = $this->z->db->getTemplate($templateName);
         }
 
-        $z->runPlugin("admincp_index_start");
+        $this->z->runPlugin("admincp_index_start");
 
         //Generate Menu
         $menuArray = array();
@@ -28,7 +33,7 @@ class admincp
         $menuArray["plugin"] = array("icon" => "plug", "name" => "Plugins");
         $menuArray["user"] = array("icon" => "user", "name" => "Users");
 
-        $z->runPlugin("admincp_index_menu", $menuArray);
+        $this->z->runPlugin("admincp_index_menu", $menuArray);
 
         //Control Body.$$body_par;
         if (!$body) {
@@ -42,7 +47,7 @@ class admincp
             $name = $menu_settings['name'];
             $current_nav = "";
 
-            if ($z->getInput('m') == $method) {
+            if ($this->z->getInput('m') == $method) {
                 $current_nav = "class=\"w3-green\"";
             }
 
@@ -50,17 +55,17 @@ class admincp
         }
 
         //Count Users
-        $countUsers = $db->countRows("users");
+        $countUsers = $this->z->db->countRows("users");
         eval("\$user_count = \"$countUsers\";");
 
-        if ($user->isAdmin) {
+        if ($this->z->user->isAdmin) {
             eval("\$html .= \"$admin_index\";");
         } else {
             $login = new login();
             $login->index();
         }
 
-        $z->runPlugin("admincp_index_end", $html);
+        $this->z->runPlugin("admincp_index_end", $html);
 
         print $html;
     }
@@ -87,7 +92,7 @@ class admincp
     private function user_index()
     {
         global $db;
-        $default_template = $db->getTemplate("admincp_user_index");
+        $default_template = $this->z->db->getTemplate("admincp_user_index");
         eval("\$return_html = \"$default_template\";");
         return $return_html;
     }
@@ -100,8 +105,8 @@ class admincp
         $all_users_sql = "SELECT * FROM users";
         $all_users = $db->fetchQuery($all_users_sql);
 
-        $row_template = $db->getTemplate("admincp_user_rows");
-        $default_template = $db->getTemplate("admincp_user_info_card");
+        $row_template = $this->z->db->getTemplate("admincp_user_rows");
+        $default_template = $this->z->db->getTemplate("admincp_user_info_card");
         //$user_rank_template = $db->getTemplate("user_rank");
 
         $return_html = "";
@@ -127,7 +132,7 @@ class admincp
                 eval("\$user_rank .= \"$user_rank_template\";");
             }*/
 
-            $user_rank = $db->generateUserHtmlRanks($user['uid']);
+            $user_rank = $this->z->db->generateUserHtmlRanks($user['uid']);
 
             //$user matchs db array.
             eval("\$return_html .= \"$default_template\";");
@@ -148,7 +153,6 @@ class admincp
      */
     private function user_edit()
     {
-        global $z, $db;
 
         //If User Submitted Data?
         if (isset($_POST['submit'])) {
@@ -156,30 +160,30 @@ class admincp
         }
 
         //User ID
-        $userID = $z->getInput('v');
+        $userID = $this->z->getInput('v');
 
         //Load and Return Template.
-        $admincp_user_edits = $db->getTemplate("admincp_user_edit");
+        $admincp_user_edits = $this->z->db->getTemplate("admincp_user_edit");
 
         //Lets Get User Fields.
         //Query All the User Info
         $user_sql = "SELECT * FROM `users` WHERE `uid` = '{$userID}'";
-        $user = $db->fetchQuery($user_sql);
+        $user = $this->z->db->fetchQuery($user_sql);
         $user_edit = $user[0];
 
         //Reset Variables
         $user_rank = "";
-        $user_edit_rank_template = $db->getTemplate("admincp_user_edit_clan_rank");
+        $user_edit_rank_template = $this->z->db->getTemplate("admincp_user_edit_clan_rank");
 
         //Query All the Users Ranks, Display Ea
         $user_group_sql = "SELECT * FROM users_clan_groups WHERE `uid` = {$userID}";
-        $user_groups = $db->fetchQuery($user_group_sql);
+        $user_groups = $this->z->db->fetchQuery($user_group_sql);
 
         foreach ($user_groups as $user_group) {
-            $user_clan_group_color = $db->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
-            $user_clan_group = $db->fetchItem("name", "clan", "WHERE `id` = " . $user_group['clan_id']);
-            $user_clan_rank_color = $db->fetchItem("color", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
-            $user_clan_permission = $db->fetchItem("name", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
+            $user_clan_group_color = $this->z->db->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
+            $user_clan_group = $this->z->db->fetchItem("name", "clan", "WHERE `id` = " . $user_group['clan_id']);
+            $user_clan_rank_color = $this->z->db->fetchItem("color", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
+            $user_clan_permission = $this->z->db->fetchItem("name", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
 
             //Add Option Menu.
             //Ranks
@@ -204,7 +208,6 @@ class admincp
 
     private function user_edit_save()
     {
-        global $z, $db;
 
         $array = array(
             "display_name" => $z->getInput('display_name'),
@@ -220,7 +223,7 @@ class admincp
 
         $where = "WHERE uid = {$z->getInput('v')}";
 
-        $db->updateArray("users", $array, $where);
+        $this->z->db->updateArray("users", $array, $where);
     }
 
 }

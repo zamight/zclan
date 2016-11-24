@@ -35,14 +35,13 @@ class register
         //Verify Registeration
         $warnings = '';
         if($this->z->getInput('registeration_submitted')) {
-            $showAnyRegisterationErrors = $this->anyRegisterationWarnings();
-            if ($showAnyRegisterationErrors) {
-                $warnings = $showAnyRegisterationErrors;
-
-            }
-            else {
+            $warnings = $this->anyRegisterationWarnings();
+            if (!$warnings) {
                 if($this->createRegisteration()) {
                     $display = $register_success;
+                }
+                else {
+                    //$display = $this->z->db->db->errorInfo();
                 }
             }
         }
@@ -80,7 +79,7 @@ class register
         }
 
         //Is the email address long enough?
-        if(strlen(($password) < 6)) {
+        if(strlen($password) < 6) {
             $warnings[] = "Password is not long enough";
         }
 
@@ -102,18 +101,18 @@ class register
 
     private function createRegisteration()
     {
-        foreach($this->formItems as $names => $labels) {
-            $$names = $this->z->getInput($names); //Set all as Variables.
-        }
+        $password = password_hash($this->z->getInput('password'), PASSWORD_BCRYPT);
 
         $insertArray = array(
-            'display_name' => $username,
-            'password' => password_hash($password, PASSWORD_BCRYPT),
+            'display_name' => $this->z->getInput('username'),
+            'password' => $password,
             'layout' => 'w3_',
             'avatar' => 'http://services.runescape.com/m=rswikiimages/en/2012/12/chat-29024951.gif',
-            'post_count' => 0,
-            'thread_count' => 0,
-            'email' => $email
+            'post_count' => '0',
+            'thread_count' => '0',
+            'signature' => '',
+            'email' => $this->z->getInput('email'),
+            'rsn' => $this->z->getInput('rsn')
         );
 
         if($this->z->db->insertArray('users', $insertArray)) {

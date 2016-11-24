@@ -58,15 +58,16 @@ $z->url_param = $urlArray;
 
 $class = new $className($z);
 
+/*
 if (!$urlArray[1] || !method_exists($class, $urlArray[1])) {
     $classMethod = 'index';
 }
 else {
     $classMethod = $urlArray[1];
 }
+*/
 
-
-$class->$classMethod($z);
+$class->index();
 $content = ob_get_contents();
 ob_end_clean();
 print $content;

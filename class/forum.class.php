@@ -170,9 +170,9 @@ class forum
         $this->z->db->insertArray('threads', $array);
 
         //Ight now Lets get the thread id.
-        $thread = $this->z->db->fetchRow("SELECT * FROM `threads` WHERE `uid` = {$user->uid} ORDER BY `id` DESC");
-        $this->z->db->addThreadCountByUid($user->uid);
-        $this->create_reply($thread['id']);
+        $thread = $this->z->db->db->lastInsertId();
+        $this->z->db->addThreadCountByUid($this->z->user->uid);
+        $this->create_reply($thread);
     }
 
     private function display_posts()
@@ -217,15 +217,7 @@ class forum
 
     private function create_reply($threadId)
     {
-        $array = array(
-            'threadID' => $threadId,
-            'uid' => $this->z->user->uid,
-            'content' => $this->z->getInput('message')
-        );
 
-        $this->z->db->addPostCountByUid($this->z->user->uid);
-        $this->z->db->addReplyCountByThreadId($threadId);
-        $this->z->db->insertArray('post', $array);
     }
 
     private function invalid_clan()

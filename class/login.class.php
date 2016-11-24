@@ -11,7 +11,18 @@ class login
 
     public function index()
     {
+        if($this->z->getInput("submit")) {
+            $this->authenticate();
+        }
 
+        // Navigate User To Correct Method
+        switch ($this->z->url_param[1]) {
+            default:
+                $this->login_form();
+        }
+    }
+
+    private function login_form() {
         $templateList = 'login_index,login_index_form,login_index_loggedin,login_index_incorrect';
         $templateListArray = explode(',', $templateList);
 
@@ -62,7 +73,7 @@ class login
 
         $authorizeFetch = $this->z->db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
 
-        if($authorizeFetch != FALSE AND $authorizeFetch > 0)
+        if(isset($authorizeFetch))
         {
 
             //Verify Password
@@ -79,11 +90,11 @@ class login
 
                 if ($this->z->db->insertArray('session', $insert_array) > 0) {
                     header('Location: /zclan/forum');
+                    die();
                 }
             }
+            return false;
         }
-
-        $this->index();
     }
 
 }

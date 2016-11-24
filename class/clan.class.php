@@ -15,8 +15,14 @@ class clan
         if($class == 'forum') {
             $this->forum();
         }
-        if($class == 'message') {
+        elseif($class == 'message') {
             $this->message();
+        }
+        elseif($class == 'manage') {
+            $this->manage();
+        }
+        else {
+            $this->forum();
         }
 
     }
@@ -33,5 +39,11 @@ class clan
         global $z;
         $forum = new message($this->z);
         $forum->index($z->getInput('c'));
+    }
+
+    public function manage() {
+        global $z;
+        $manage = new manage($this->z);
+        $manage->index($z->getInput('c'));
     }
 }
