@@ -38,16 +38,14 @@ trait shoutbox
 
     private function shoutbox_add_message($clanId = 1)
     {
-        global $db, $z, $user;
-
         $table = 'shoutbox';
         $array = array(
-            'uid' => $user->uid,
+            'uid' => $this->z->user->uid,
             'clanid' => $clanId,
             'timestamp' => time(),
             'message' => $this->z->getInput('shout_message')
         );
 
-        $db->insertArray($table, $array);
+        $this->z->db->insertArray($table, $array);
     }
 }

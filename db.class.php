@@ -84,26 +84,24 @@ class db
 	//Insert a array into the table. The name of index must match database table names.
 	public function insertArray($table, $array)
     {
-		$sqlName = "INSERT INTO {$table} (";
-		$sqlValue = ") VALUES (";
-		$first = true;
+        $sqlName = "INSERT INTO {$table} (";
+        $sqlValue = ") VALUES (";
+        $first = true;
         $counter = 1;
-
-		foreach($array as $name => $value)
-		{
-			if($first)
-			{
-				$sqlName .= $name;
-				$sqlValue .= "?";
-				$first = false;
-			}
-			else
-			{
-				$sqlName .= "," . $name;
-				$sqlValue .= "," . "?";
-			}
-		}
-
+        foreach($array as $name => $value)
+        {
+            if($first)
+            {
+                $sqlName .= $name;
+                $sqlValue .= "?";
+                $first = false;
+            }
+            else
+            {
+                $sqlName .= "," . $name;
+                $sqlValue .= "," . "?";
+            }
+        }
         $sql = $sqlName . $sqlValue . ")";
         $query = $this->db->prepare($sql);
         foreach($array as $name => $value)
@@ -111,11 +109,8 @@ class db
             $query->bindParam($counter, $array[$name]);
             $counter++;
         }
-
-
         $query->execute();
-
-        return $query->rowCount();
+        return $this->db->lastInsertId();
     }
 
     public function updateArray($table, $array, $where)
@@ -178,7 +173,7 @@ class db
         return $result;
     }
 
-    public function generateUserHtmlRanks($userID = FALSE)
+    public function generateUserHtmlRanks($userID = FALSE, $display = 10)
     {
         if(!userID) {
             false;
@@ -188,18 +183,23 @@ class db
 
         //Reset Variables
         $user_rank = "";
+        $counter = 1;
 
         //Query All the Users Ranks, Display Ea
         $user_group_sql = "SELECT * FROM users_clan_groups WHERE `uid` = {$userID}";
         $user_groups = $this->fetchQuery($user_group_sql);
 
         foreach ($user_groups as $user_group) {
+            if($counter > $display) {
+                break;
+            }
             $user_clan_group_color = $this->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
             $user_clan_group = $this->fetchItem("name", "clan", "WHERE `id` = " . $user_group['clan_id']);
             $user_clan_rank_color = $this->fetchItem("color", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
             $user_clan_permission = $this->fetchItem("name", "clan_groups", "WHERE `id` = " . $user_group['group_id']);
 
             eval("\$user_rank .= \"$user_rank_template\";");
+            $counter++;
         }
 
         return $user_rank;
@@ -233,5 +233,14 @@ class db
             $query->execute();
         }
         return false;
+    }
+
+    public function deleteItem($table, $field, $value) {
+        $sql = "DELETE FROM {$table} WHERE {$field} = :value";
+        $query = $this->db->prepare($sql);
+        $query->bindParam(':value',$value);
+        if(!$query->execute()) {
+            die("Couldn't log out.");
+        }
     }
 }

@@ -23,6 +23,8 @@ $z = new z();
 $z->db = new db($z);
 $z->user = new user($z);
 $z->site_default_name = "OLDRS Clan Management System";
+$z->site_url = 'http://localhost/zclan/';
+$z->site_urlc = 'http://localhost/zclan/';
 
 //	Setup Variables
 $urlArray = explode("/", $z->getInput('c'));
@@ -42,6 +44,7 @@ if (!file_exists($url)) {
     unset($urlArray[0]);
     $urlArray = array_values($urlArray);
     $urlArray['clan_name'] = $tmp;
+    $z->site_urlc .= $urlArray['clan_name'] . '/';
 }
 else {
     $urlArray['clan_name'] = 'Site';

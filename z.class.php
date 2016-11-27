@@ -33,6 +33,21 @@ class z
 		}
 	}
 
+    public function getInput2($get, &$name)
+    {
+        if(isset($_GET[$get]))
+        {
+            $name = $_GET[$get];
+        }
+        else
+        {
+            if(!isset($_POST[$get]))
+            {
+                $name = FALSE;
+            }
+            $name = $_POST[$get];
+        }
+    }
 	public function __construct()
 	{
 		//$this->setting_array['db'] = new db(this);

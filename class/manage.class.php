@@ -1,6 +1,6 @@
 <?php
 
-include("/trait/header.trait.php");
+include(_DIR_ . "/trait/header.trait.php");
 
 class manage
 {
@@ -159,7 +159,37 @@ class manage
     }
 
     private function user() {
+        switch ($this->z->url_param[2]) {
+            case "add":
+                $this->user_add();
+                break;
+            default:
+                $this->user_default();
+        }
+    }
 
+    private function user_default() {
+        $templateList = 'manage_user_list,manage_user_block';
+        $templateListArray = explode(',', $templateList);
+
+        $manage_user_blocks = "";
+
+        //Setup Template Variables.
+        foreach ($templateListArray as $templateName) {
+            $$templateName = $this->z->db->getTemplate($templateName);
+        }
+
+        // Get Each Forum
+        $usersSQL = "SELECT uid,display_name,avatar FROM users ORDER BY uid DESC";
+        $users = $this->z->db->fetchQuery($usersSQL);
+
+        // Go Though Each $forums
+        foreach ($users as $user) {
+            $ranks = $this->z->db->generateUserHtmlRanks($user['uid'], 1);
+            eval("\$manage_user_blocks .= \"$manage_user_block\";");
+        }
+
+        eval("\$this->content = \"$manage_user_list\";");
     }
 
     private function ban() {

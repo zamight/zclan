@@ -1,8 +1,8 @@
 <?php
 
 //Include Traits
-include("/trait/shoutbox.trait.php");
-include("/trait/header.trait.php");
+include(_DIR_ . "/trait/shoutbox.trait.php");
+include(_DIR_ . "/trait/header.trait.php");
 
 class forum
 {
@@ -60,15 +60,19 @@ class forum
 
         $this->clan_name = str_replace('_', ' ', $this->forumName);
 
-        if($this->z->getInput('title')) {
+        if($this->z->getInput('title') && $this->z->getInput('title')) {
             $this->create_thread();
         }
 
-        if($this->z->getInput('new_thread')) {
-            $threadID = explode('-', $this->threadTitle);
-            $threadID = $threadID[1];
-            $this->create_reply($threadID);
+
+        if($this->z->getInput('message')) {
+            if($this->threadTitle) {
+                $threadID = explode('-', $this->threadTitle);
+                $threadID = $threadID[1];
+                $this->create_reply($threadID);
+            }
         }
+
 
         if(!empty($this->threadTitle)) {
             //Display Threads
@@ -160,17 +164,19 @@ class forum
     private function create_thread()
     {
         $name = str_replace('_', ' ', $this->forumName);
+        $forumID = $this->z->db->fetchItem("id", "forum", "WHERE name = '{$name}'");
 
         $array = array(
-            'forumID' => $this->z->db->fetchItem("id", "forum", "WHERE name = '{$name}'"),
+            'forumID' => $forumID,
             'uid' => $this->z->user->uid,
             'title' => $this->z->getInput('title'),
-            'enabled' => 1
+            'reply_count' => 0,
+            'enabled' => 1,
+            'view_count' => 0
         );
-        $this->z->db->insertArray('threads', $array);
 
         //Ight now Lets get the thread id.
-        $thread = $this->z->db->db->lastInsertId();
+        $thread = $this->z->db->insertArray('threads', $array);
         $this->z->db->addThreadCountByUid($this->z->user->uid);
         $this->create_reply($thread);
     }
@@ -178,7 +184,7 @@ class forum
     private function display_posts()
     {
         //Include the BBCode Engine
-        include("/nbbc-1.4.5/nbbc.php");
+        include(_DIR_ . "/nbbc-1.4.5/nbbc.php");
         $bbcode = new BBCode();
 
         //Lets Try To Load The Forum
@@ -208,6 +214,7 @@ class forum
             $users = $this->z->db->fetchRow("SELECT * FROM `users` WHERE `uid` = '{$post['uid']}'");
             $ranks = $this->z->db->generateUserHtmlRanks($post['uid']);
             $post['content'] = $bbcode->Parse($post['content']);
+            $post['date'] = date("g:i jS D, Y",$post['date']);
             eval("\$post_html .= \"$forum_posts_list_tpl\";");
         }
 
@@ -217,7 +224,16 @@ class forum
 
     private function create_reply($threadId)
     {
+        $array = array(
+            'threadID' => $threadId,
+            'uid' => $this->z->user->uid,
+            'content' => $this->z->getInput('message'),
+            'date' => time()
+        );
 
+        $this->z->db->addPostCountByUid($this->z->user->uid);
+        $this->z->db->addReplyCountByThreadId($threadId);
+        $this->z->db->insertArray('post', $array);
     }
 
     private function invalid_clan()
