@@ -204,6 +204,21 @@ class db
 
         return $user_rank;
     }
+
+    public function updateLootPoints($solo, $assisted, $points, $user_group_id)
+    {
+            $query = $this->db->prepare("UPDATE users_clan_groups SET solo = solo + ?, assisted = assisted + ?,
+                points = points + ?, total = total + ? WHERE id = ?");
+            $query->bindValue(1, $solo, PDO::PARAM_INT);
+            $query->bindValue(2, $assisted, PDO::PARAM_INT);
+            $query->bindValue(3, $points, PDO::PARAM_INT);
+            $query->bindValue(4, $solo + $assisted, PDO::PARAM_INT);
+            $query->bindValue(5, $user_group_id, PDO::PARAM_INT);
+            $query->execute();
+
+        return false;
+    }
+
     public function addPostCountByUid($uid)
     {
         if(!empty($uid)) {

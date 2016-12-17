@@ -1,6 +1,6 @@
 <?php
 
-include("/trait/header.trait.php");
+include(_DIR_ . "/trait/header.trait.php");
 
 class message
 {

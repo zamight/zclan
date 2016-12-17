@@ -89,7 +89,7 @@ class login
                 );
 
                 if ($this->z->db->insertArray('session', $insert_array) > 0) {
-                    header("Location: {$this->z->site_url}forum");
+                    header("Location: {$this->z->site_urlc}forum");
                     die();
                 }
             }

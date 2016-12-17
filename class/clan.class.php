@@ -21,6 +21,12 @@ class clan
         elseif($class == 'manage') {
             $this->manage();
         }
+        elseif($class == 'loot_highscores') {
+            $this->loot_highscores();
+        }
+        elseif($class == 'logout') {
+            $this->logout();
+        }
         else {
             $this->forum();
         }
@@ -34,6 +40,13 @@ class clan
         $forum->index($z->getInput('c'));
     }
 
+    public function logout()
+    {
+        global $z;
+        $logout = new logout($this->z);
+        $logout->index($z->getInput('c'));
+    }
+
     public function message()
     {
         global $z;
@@ -45,5 +58,11 @@ class clan
         global $z;
         $manage = new manage($this->z);
         $manage->index($z->getInput('c'));
+    }
+
+    public function loot_highscores() {
+        global $z;
+        $loot_highscores = new loot_highscores($this->z);
+        $loot_highscores->index($z->getInput('c'));
     }
 }

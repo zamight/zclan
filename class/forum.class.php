@@ -58,9 +58,11 @@ class forum
         $this->forumName = $this->z->url_param[1];
         $this->threadTitle = $this->z->url_param[2];
 
+        //die();
+
         $this->clan_name = str_replace('_', ' ', $this->forumName);
 
-        if($this->z->getInput('title') && $this->z->getInput('title')) {
+        if($this->z->getInput('title') && $this->z->getInput('message')) {
             $this->create_thread();
         }
 
@@ -224,11 +226,12 @@ class forum
 
     private function create_reply($threadId)
     {
+        $time = time();
         $array = array(
             'threadID' => $threadId,
             'uid' => $this->z->user->uid,
             'content' => $this->z->getInput('message'),
-            'date' => time()
+            'date' => $time
         );
 
         $this->z->db->addPostCountByUid($this->z->user->uid);

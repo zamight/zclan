@@ -59,7 +59,7 @@ class manage
     }
 
     private function forum_add() {
-        $templateList = 'manage_forum_add_index';
+        $templateList = 'manage_forum_add_index,drop_box';
         $templateListArray = explode(',', $templateList);
 
         //Setup Template Variables.
@@ -69,10 +69,10 @@ class manage
 
         // If The User Hit The Submit Button
         if($this->z->getInput('forum_add_submitted')) {
+
             // Check For Any Errors
             $warnings = $this->anyErrorsForForum();
             if(!$warnings) {
-                // Create The Category :)
 
                 $array = array(
                     'name' => $this->z->getInput('name'),
@@ -83,11 +83,38 @@ class manage
                     'banner_url' => $this->z->getInput('banner_url')
                 );
 
-                $this->z->db->insertArray('category', $array);
-                header("Location: ../forum");
-                exit();
+                if ($this->z->getInput('category') == -1) {
+                    $this->z->db->insertArray('category', $array);
+                    header("Location: {$this->z->site_urlc}forum");
+                    exit();
+                }
+                else {
+                    $array['categoryID'] = $this->z->getInput('category');
+                    $array['parentID'] = 0;
+                    $array['thread_count'] = 0;
+                    $array['post_count'] = 0;
+                    $array['lastReplyuid'] = 0;
+                    $array['moderator_group'] = 0;
+                    $array['moderator_uid'] = 0;
+
+                    $this->z->db->insertArray('forum', $array);
+                    header("Location: {$this->z->site_urlc}forum");
+                    exit();
+                }
             }
         }
+
+        $drop_boxs = "";
+        // Get All Categories
+        $categorySQL = "SELECT id, name, banner_url FROM category WHERE clanID = '{$this->clanID}' ORDER BY sort ASC";
+        $categories = $this->z->db->fetchQuery($categorySQL);
+
+        // Go Through Each $categories
+        foreach ($categories as $category) {
+            eval("\$drop_boxs .= \"$drop_box\";");
+        }
+
+        // Make List For categories.
 
         eval("\$this->content = \"$manage_forum_add_index\";");
     }
@@ -168,8 +195,21 @@ class manage
         }
     }
 
-    private function user_default() {
-        $templateList = 'manage_user_list,manage_user_block';
+    private function user_add() {
+        if ($this->z->url_param[3]) {
+            $array = array(
+                'uid' => intval($this->z->url_param[3]),
+                'clan_id' => $this->clanID,
+                'group_id' => 3
+            );
+
+            $this->z->db->insertArray('users_clan_groups', $array);
+
+            header("Location: {$this->z->site_urlc}manage/user");
+            die();
+        }
+
+        $templateList = 'manage_user_add_list,manage_user_add_block';
         $templateListArray = explode(',', $templateList);
 
         $manage_user_blocks = "";
@@ -186,7 +226,38 @@ class manage
         // Go Though Each $forums
         foreach ($users as $user) {
             $ranks = $this->z->db->generateUserHtmlRanks($user['uid'], 1);
-            eval("\$manage_user_blocks .= \"$manage_user_block\";");
+            eval("\$manage_user_blocks .= \"$manage_user_add_block\";");
+        }
+
+        eval("\$this->content = \"$manage_user_add_list\";");
+    }
+
+    private function user_default() {
+        $templateList = 'manage_user_list,manage_user_block';
+        $templateListArray = explode(',', $templateList);
+
+        $manage_user_blocks = "";
+
+        //Setup Template Variables.
+        foreach ($templateListArray as $templateName) {
+            $$templateName = $this->z->db->getTemplate($templateName);
+        }
+
+        // Load Each Clan Member
+        $clanMembersSql = "SELECT * FROM users_clan_groups WHERE clan_id = {$this->clanID}";
+        $clanMembers = $this->z->db->fetchQuery($clanMembersSql);
+
+        // Go Though Each $forums
+        foreach ($clanMembers as $members) {
+            // Get Each Forum
+            $usersSQL = "SELECT uid,display_name,avatar FROM users WHERE uid = {$members['uid']}";
+            $users = $this->z->db->fetchQuery($usersSQL);
+
+            // Go Though Each $forums
+            foreach ($users as $user) {
+                $ranks = $this->z->db->generateUserHtmlRanks($user['uid'], 2);
+                eval("\$manage_user_blocks .= \"$manage_user_block\";");
+            }
         }
 
         eval("\$this->content = \"$manage_user_list\";");
