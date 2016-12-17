@@ -43,11 +43,6 @@ class manage
         print $this->build($this->clanName, $this->content);
     }
 
-    private function navigation() {
-        $tpl = $this->z->db->getTemplate("manage_navigation_index");
-        eval("\$this->content = \"$tpl\";");
-    }
-
     private function forum() {
         switch ($this->z->url_param[2]) {
             case "add":
@@ -269,5 +264,10 @@ class manage
 
     private function setting() {
 
+    }
+
+    private function navigation() {
+        $tpl = $this->z->db->getTemplate("manage_navigation_index");
+        eval("\$this->content = \"$tpl\";");
     }
 }

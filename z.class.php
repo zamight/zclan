@@ -13,6 +13,12 @@ class z
      */
 	private $pluginList = array();
 
+	public function __construct()
+	{
+		//$this->setting_array['db'] = new db(this);
+		//$this->setting_array['user'] = new user(this);
+	}
+
 	/**
 	 * @param $get
 	 * @return bool
@@ -48,11 +54,6 @@ class z
             $name = $_POST[$get];
         }
     }
-	public function __construct()
-	{
-		//$this->setting_array['db'] = new db(this);
-		//$this->setting_array['user'] = new user(this);
-	}
 
 	/**
 	 * @param $index
@@ -83,11 +84,6 @@ class z
 		$this->pluginList[$index][] = $func_plugin;
 	}
 
-	public function __set($name, $value)
-	{
-		$this->setting_array[$name] = $value;
-	}
-
 	public function __get($name)
 	{
 		if(array_key_exists($name, $this->setting_array)) {
@@ -95,6 +91,11 @@ class z
 		}
 
 		return null;
+	}
+
+	public function __set($name, $value)
+	{
+		$this->setting_array[$name] = $value;
 	}
 
 }

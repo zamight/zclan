@@ -40,13 +40,6 @@ class clan
         $forum->index($z->getInput('c'));
     }
 
-    public function logout()
-    {
-        global $z;
-        $logout = new logout($this->z);
-        $logout->index($z->getInput('c'));
-    }
-
     public function message()
     {
         global $z;
@@ -64,5 +57,12 @@ class clan
         global $z;
         $loot_highscores = new loot_highscores($this->z);
         $loot_highscores->index($z->getInput('c'));
+    }
+
+    public function logout()
+    {
+        global $z;
+        $logout = new logout($this->z);
+        $logout->index($z->getInput('c'));
     }
 }

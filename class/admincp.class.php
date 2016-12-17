@@ -10,6 +10,25 @@ class admincp
         $this->z = $z;
     }
 
+    public function user()
+    {
+        global $classAction;
+
+        switch ($classAction) {
+            case "list":
+                $this->index($this->user_list());
+                break;
+            case "edit":
+                $this->index($this->user_edit());
+                break;
+            default:
+                $this->index($this->user_index());
+        }
+
+        /* TODO LIST ALL USERS WITH A PAGINATION */
+
+    }
+
     public function index($body = FALSE)
     {
 
@@ -70,33 +89,6 @@ class admincp
         print $html;
     }
 
-    public function user()
-    {
-        global $classAction;
-
-        switch ($classAction) {
-            case "list":
-                $this->index($this->user_list());
-                break;
-            case "edit":
-                $this->index($this->user_edit());
-                break;
-            default:
-                $this->index($this->user_index());
-        }
-
-        /* TODO LIST ALL USERS WITH A PAGINATION */
-
-    }
-
-    private function user_index()
-    {
-        global $db;
-        $default_template = $this->z->db->getTemplate("admincp_user_index");
-        eval("\$return_html = \"$default_template\";");
-        return $return_html;
-    }
-
     private function user_list($page = 0, $max = 20)
     {
         global $db;
@@ -148,9 +140,6 @@ class admincp
         return $return_html;
     }
 
-    /*
-     * Edit Users
-     */
     private function user_edit()
     {
 
@@ -206,6 +195,10 @@ class admincp
         return $return_html;
     }
 
+    /*
+     * Edit Users
+     */
+
     private function user_edit_save()
     {
 
@@ -216,7 +209,7 @@ class admincp
             "thread_count" => $z->getInput('thread_count'),
             "email" => $z->getInput('email')
         );
-        
+
         if(strlen($z->getInput('password')) > 7) {
             $array['password'] = password_hash($z->getInput('password'), PASSWORD_BCRYPT);
         }
@@ -224,6 +217,14 @@ class admincp
         $where = "WHERE uid = {$z->getInput('v')}";
 
         $this->z->db->updateArray("users", $array, $where);
+    }
+
+    private function user_index()
+    {
+        global $db;
+        $default_template = $this->z->db->getTemplate("admincp_user_index");
+        eval("\$return_html = \"$default_template\";");
+        return $return_html;
     }
 
 }

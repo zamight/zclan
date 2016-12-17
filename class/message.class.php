@@ -28,6 +28,17 @@ class message
         }
     }
 
+    private function showMessage() {
+        // Initialize Template Variables
+        $templateList = 'message_list,message_index';
+        $templateListArray = explode(',', $templateList);
+
+        //Setup Template Variables.
+        foreach ($templateListArray as $templateName) {
+            $$templateName = $this->z->db->getTemplate($templateName);
+        }
+    }
+
     private function listMessages()
     {
         $templateList = 'message_list,message_index';
@@ -77,17 +88,6 @@ class message
         eval("\$content .= \"$message_index\";");
 
         print $this->build($this->clanName, $content);
-    }
-
-    private function showMessage() {
-        // Initialize Template Variables
-        $templateList = 'message_list,message_index';
-        $templateListArray = explode(',', $templateList);
-
-        //Setup Template Variables.
-        foreach ($templateListArray as $templateName) {
-            $$templateName = $this->z->db->getTemplate($templateName);
-        }
     }
 
 }

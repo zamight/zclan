@@ -19,17 +19,7 @@ class db
     }
 
 	//Return a template layout.
-    public function getTemplate($templateName)
-    {
-        $query = $this->db->prepare("SELECT * FROM template WHERE name = '{$templateName}'");
-        $query->execute();
 
-        $result = $query->fetch();
-
-        return $result[2];
-    }
-	
-	//Return a Display Name by the uid.
     public function getUsernameByID($uid)
     {
         $query = $this->db->prepare("SELECT display_name FROM users WHERE uid = '{$uid}' LIMIT 1");
@@ -40,7 +30,8 @@ class db
         return $result['display_name'];
     }
 	
-	//Return a uid by a display name
+	//Return a Display Name by the uid.
+
 	public function getIDbyUsername($username)
     {
         $query = $this->db->prepare("SELECT uid FROM users WHERE display_name = '{$username}' LIMIT 1");
@@ -54,8 +45,9 @@ class db
         }
 
     }
+	
+	//Return a uid by a display name
 
-    //Return a uid by a display name
     public function getIDbyEmail($email)
     {
         $query = $this->db->prepare("SELECT uid FROM users WHERE email = '{$email}' LIMIT 1");
@@ -69,19 +61,9 @@ class db
         }
 
     }
-	
-	//Get One value from a table, colum, row
-	public function fetchItem($select, $from, $where)
-	{
-		$query = $this->db->prepare("SELECT {$select} FROM {$from} {$where}");
-        $query->execute();
 
-        $result = $query->fetch();
+    //Return a uid by a display name
 
-        return $result[$select];
-	}
-	
-	//Insert a array into the table. The name of index must match database table names.
 	public function insertArray($table, $array)
     {
         $sqlName = "INSERT INTO {$table} (";
@@ -112,6 +94,8 @@ class db
         $query->execute();
         return $this->db->lastInsertId();
     }
+	
+	//Get One value from a table, colum, row
 
     public function updateArray($table, $array, $where)
     {
@@ -143,16 +127,8 @@ class db
         return $query->rowCount();
     }
 	
-	public function fetchQuery($sql)
-    {
-        $query = $this->db->prepare($sql);
-        $query->execute();
+	//Insert a array into the table. The name of index must match database table names.
 
-        $result = $query->fetchAll(PDO::FETCH_ASSOC);
-
-        return $result;
-    }
-	
     public function fetchRow($sql)
     {
         $query = $this->db->prepare($sql);
@@ -172,7 +148,7 @@ class db
 
         return $result;
     }
-
+	
     public function generateUserHtmlRanks($userID = FALSE, $display = 10)
     {
         if(!userID) {
@@ -204,6 +180,36 @@ class db
 
         return $user_rank;
     }
+	
+    public function getTemplate($templateName)
+    {
+        $query = $this->db->prepare("SELECT * FROM template WHERE name = '{$templateName}'");
+        $query->execute();
+
+        $result = $query->fetch();
+
+        return $result[2];
+    }
+
+	public function fetchQuery($sql)
+    {
+        $query = $this->db->prepare($sql);
+        $query->execute();
+
+        $result = $query->fetchAll(PDO::FETCH_ASSOC);
+
+        return $result;
+    }
+
+	public function fetchItem($select, $from, $where)
+	{
+		$query = $this->db->prepare("SELECT {$select} FROM {$from} {$where}");
+        $query->execute();
+
+        $result = $query->fetch();
+
+        return $result[$select];
+	}
 
     public function updateLootPoints($solo, $assisted, $points, $user_group_id)
     {

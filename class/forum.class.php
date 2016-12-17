@@ -10,9 +10,9 @@ class forum
     use shoutbox;
     use header;
 
+    public $clan_name = FALSE;
     private $forumName = FALSE;
     private $threadTitle = FALSE;
-    public $clan_name = FALSE;
     private $z = null;
     
     public function __construct($z)
@@ -98,69 +98,9 @@ class forum
         print $this->build($clanName, $content);
     }
 
-    private function index_categorys($clanId = 1)
+    private function invalid_clan()
     {
-	//Load Layout.
-        $tpl = $this->z->db->getTemplate("forum_index_category");
-        $tplForum = $this->z->db->getTemplate("forum_index_forum");
-        $html = '';
 
-        //Template is Loaded.
-        // Lets Loop All the Categorys.
-        $category_sql = 'SELECT * FROM category WHERE clanID = ' . $clanId;
-        $categorys = $this->z->db->fetchQuery($category_sql);
-
-        foreach($categorys as $category) {
-            //Lets Load Each Forum Now.
-            $forum_sql = 'SELECT * FROM forum WHERE categoryID = ' . $category['id'] . ' AND clanID = ' . $clanId;
-            $forums = $this->z->db->fetchQuery($forum_sql);
-
-            $forum_html = '';
-
-            foreach($forums as $forum) {
-                //Clean Url.
-                $url = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $forum['name']);
-                eval("\$forum_html .= \"$tplForum\";");
-            }
-
-            eval("\$html .= \"$tpl\";"); 
-        } 
-
-        return $html;
-    }
-
-    private function index_forum($clanId = 1)
-    {
-        //Load Layout.
-        $tpl = $this->z->db->getTemplate("forum_threads");
-        $tplThread = $this->z->db->getTemplate("forum_thread_list");
-        $html = '';
-        $url = '';
-
-
-        //Template is Loaded.
-        // Lets Loop All the Categorys.
-        $forum_sql = 'SELECT * FROM forum WHERE `name` = "' . $this->clan_name . '" AND `clanID` = ' . $clanId;
-        $forums = $this->z->db->fetchQuery($forum_sql);
-
-        foreach($forums as $forum) {
-            //Lets Load Each Forum Now.
-            $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'] . ' ORDER BY `id` DESC';
-            $threads = $this->z->db->fetchQuery($threads_sql);
-            //die(print_r($threads));
-            $thread_html = '';
-
-            foreach($threads as $thread) {
-                //$thread['title'] = $bbcode->Parse($thread['title']);
-                //$thread['conent'] = $bbcode->Parse($thread['conent']);
-                $thread['url'] = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $thread['title']) . '-' . $thread['id'];
-                eval("\$thread_html .= \"$tplThread\";");
-            }
-
-            eval("\$html .= \"$tpl\";");
-        }
-
-        return $html;
     }
 
     private function create_thread()
@@ -181,6 +121,21 @@ class forum
         $thread = $this->z->db->insertArray('threads', $array);
         $this->z->db->addThreadCountByUid($this->z->user->uid);
         $this->create_reply($thread);
+    }
+
+    private function create_reply($threadId)
+    {
+        $time = time();
+        $array = array(
+            'threadID' => $threadId,
+            'uid' => $this->z->user->uid,
+            'content' => $this->z->getInput('message'),
+            'date' => $time
+        );
+
+        $this->z->db->addPostCountByUid($this->z->user->uid);
+        $this->z->db->addReplyCountByThreadId($threadId);
+        $this->z->db->insertArray('post', $array);
     }
 
     private function display_posts()
@@ -224,24 +179,69 @@ class forum
         return $html;
     }
 
-    private function create_reply($threadId)
+    private function index_forum($clanId = 1)
     {
-        $time = time();
-        $array = array(
-            'threadID' => $threadId,
-            'uid' => $this->z->user->uid,
-            'content' => $this->z->getInput('message'),
-            'date' => $time
-        );
+        //Load Layout.
+        $tpl = $this->z->db->getTemplate("forum_threads");
+        $tplThread = $this->z->db->getTemplate("forum_thread_list");
+        $html = '';
+        $url = '';
 
-        $this->z->db->addPostCountByUid($this->z->user->uid);
-        $this->z->db->addReplyCountByThreadId($threadId);
-        $this->z->db->insertArray('post', $array);
+
+        //Template is Loaded.
+        // Lets Loop All the Categorys.
+        $forum_sql = 'SELECT * FROM forum WHERE `name` = "' . $this->clan_name . '" AND `clanID` = ' . $clanId;
+        $forums = $this->z->db->fetchQuery($forum_sql);
+
+        foreach($forums as $forum) {
+            //Lets Load Each Forum Now.
+            $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'] . ' ORDER BY `id` DESC';
+            $threads = $this->z->db->fetchQuery($threads_sql);
+            //die(print_r($threads));
+            $thread_html = '';
+
+            foreach($threads as $thread) {
+                //$thread['title'] = $bbcode->Parse($thread['title']);
+                //$thread['conent'] = $bbcode->Parse($thread['conent']);
+                $thread['url'] = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $thread['title']) . '-' . $thread['id'];
+                eval("\$thread_html .= \"$tplThread\";");
+            }
+
+            eval("\$html .= \"$tpl\";");
+        }
+
+        return $html;
     }
 
-    private function invalid_clan()
+    private function index_categorys($clanId = 1)
     {
+	//Load Layout.
+        $tpl = $this->z->db->getTemplate("forum_index_category");
+        $tplForum = $this->z->db->getTemplate("forum_index_forum");
+        $html = '';
 
+        //Template is Loaded.
+        // Lets Loop All the Categorys.
+        $category_sql = 'SELECT * FROM category WHERE clanID = ' . $clanId;
+        $categorys = $this->z->db->fetchQuery($category_sql);
+
+        foreach($categorys as $category) {
+            //Lets Load Each Forum Now.
+            $forum_sql = 'SELECT * FROM forum WHERE categoryID = ' . $category['id'] . ' AND clanID = ' . $clanId;
+            $forums = $this->z->db->fetchQuery($forum_sql);
+
+            $forum_html = '';
+
+            foreach($forums as $forum) {
+                //Clean Url.
+                $url = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $forum['name']);
+                eval("\$forum_html .= \"$tplForum\";");
+            }
+
+            eval("\$html .= \"$tpl\";");
+        }
+
+        return $html;
     }
 
 }

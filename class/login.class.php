@@ -22,6 +22,38 @@ class login
         }
     }
 
+    public function authenticate()
+    {
+
+        $username = $this->z->getInput("username");
+        $password = $this->z->getInput("password");
+
+        $authorizeFetch = $this->z->db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
+
+        if(isset($authorizeFetch))
+        {
+
+            //Verify Password
+            if(password_verify($password, $authorizeFetch['password'])) {
+                //Get Session Key
+                $session_key = session_id();
+
+                //Lets create the login session
+                $insert_array = array(
+                    'uid' => $authorizeFetch['uid'],
+                    'agent' => 'something',
+                    'session_id' => $session_key
+                );
+
+                if ($this->z->db->insertArray('session', $insert_array) > 0) {
+                    header("Location: {$this->z->site_urlc}forum");
+                    die();
+                }
+            }
+            return false;
+        }
+    }
+
     private function login_form() {
         $templateList = 'login_index,login_index_form,login_index_loggedin,login_index_incorrect';
         $templateListArray = explode(',', $templateList);
@@ -63,38 +95,6 @@ class login
         $this->z->runPlugin("login_index_end", $html);
 
         print $html;
-    }
-
-    public function authenticate()
-    {
-
-        $username = $this->z->getInput("username");
-        $password = $this->z->getInput("password");
-
-        $authorizeFetch = $this->z->db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
-
-        if(isset($authorizeFetch))
-        {
-
-            //Verify Password
-            if(password_verify($password, $authorizeFetch['password'])) {
-                //Get Session Key
-                $session_key = session_id();
-
-                //Lets create the login session
-                $insert_array = array(
-                    'uid' => $authorizeFetch['uid'],
-                    'agent' => 'something',
-                    'session_id' => $session_key
-                );
-
-                if ($this->z->db->insertArray('session', $insert_array) > 0) {
-                    header("Location: {$this->z->site_urlc}forum");
-                    die();
-                }
-            }
-            return false;
-        }
     }
 
 }
