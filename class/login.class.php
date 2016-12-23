@@ -2,6 +2,7 @@
 
 class login
 {
+
     private $z = null;
 
     public function __construct($z)
@@ -82,7 +83,7 @@ class login
         {
             //If User is logged in
             //Send User to defualt forums.
-            header("Location: /zclan/forum");
+            header("Location: {$this->z->site_url}forum");
             exit();
         }
         else

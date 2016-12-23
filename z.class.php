@@ -1,16 +1,10 @@
 <?php
 
-/**
- * Class settings
- */
 class z
 {
 
 	public $setting_array = array();
 
-	/**
-	 * @var array
-     */
 	private $pluginList = array();
 
 	public function __construct()
@@ -19,10 +13,6 @@ class z
 		//$this->setting_array['user'] = new user(this);
 	}
 
-	/**
-	 * @param $get
-	 * @return bool
-     */
 	public function getInput($get)
 	{
 		if(isset($_GET[$get]))
@@ -55,10 +45,6 @@ class z
         }
     }
 
-	/**
-	 * @param $index
-	 * @param null $params
-     */
 	public function runPlugin($index, $params = NULL)
 	{
 		if($this->pluginList[$index]) {
@@ -75,10 +61,6 @@ class z
 		}
 	}
 
-	/**
-	 * @param $index
-	 * @param $func_plugin
-     */
 	public function addPlugin($index, $func_plugin)
 	{
 		$this->pluginList[$index][] = $func_plugin;

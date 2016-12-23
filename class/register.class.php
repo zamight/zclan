@@ -4,7 +4,6 @@ class register
 {
 
     private $z = null;
-
     private $formItems = array(
     "username" => "Username",
     "email" => "Email",
@@ -20,6 +19,20 @@ class register
 
     public function index()
     {
+        // Navigate User To Correct Method
+        switch ($this->z->url_param[1]) {
+            case "verifyCode":
+                $this->verifyCode();
+                break;
+            case "expiredorwrong":
+                $this->expiredorwrong();
+                break;
+            default:
+                $this->register();
+        }
+    }
+
+    private function register() {
         $templateList = 'register_index,register_success';
         $templateListArray = explode(',', $templateList);
 
@@ -107,19 +120,77 @@ class register
             'display_name' => $this->z->getInput('username'),
             'password' => $password,
             'layout' => 'w3_',
-            'avatar' => 'http://services.runescape.com/m=rswikiimages/en/2012/12/chat-29024951.gif',
+            'avatar' => 'https://secure.runescape.com/m=avatar-rs/default_chat.png',
             'post_count' => '0',
             'thread_count' => '0',
             'signature' => '',
             'email' => $this->z->getInput('email'),
-            'rsn' => $this->z->getInput('rsn')
+            'rsn' => $this->z->getInput('rsn'),
+            'verified' => 0
         );
 
-        if($this->z->db->insertArray('users', $insertArray)) {
+        $uid = $this->z->db->insertArray('users', $insertArray);
+
+        if($uid) {
+            $code = $this->createVerifyCode($uid);
+            $this->mailCode($this->z->getInput('email'), $code);
             return true;
         }
 
         return false;
+    }
+
+    private function createVerifyCode($uid) {
+        $code = md5($uid . time());
+        $insertArray = array(
+            'uid' => $uid,
+            'code' => $code
+        );
+
+        $this->z->db->insertArray('email_code', $insertArray);
+        return $code;
+    }
+
+    private function expiredorwrong() {
+        print "Incorrect token or expired.";
+    }
+
+    private function mailCode($email, $code) {
+        $to      = $email;
+        $subject = 'OLDRS.CC Verify Email';
+        $message = "Congratulations for registering at oldrs.cc! To complete your registeration 
+        you will need to click the link below to verify your email address is correct. <br /><br />
+        <a href=\"{$this->z->site_url}register/verifyCode/{$code}\">Verify Email</a><br /><br />Thank You,<br />OLDRS.CC Staff";
+        $headers = 'From: no-reply@oldrs.cc' . "\r\n" .
+            'Reply-To: no-reply@oldrs.cc' . "\r\n" .
+            'X-Mailer: PHP/' . phpversion() . "\r\n" .
+            'Content-type: text/html; charset=utf-8' . "\r\n";
+
+        mail($to, $subject, $message, $headers);
+    }
+
+    private function verifyCode() {
+        $code = $this->z->url_param[2];
+
+        if(!$code) {
+            die($this->expiredorwrong());
+        }
+
+        // Does the code Exist?
+        $codeSQL = $this->z->db->fetchQuery("SELECT * FROM `email_code` WHERE `code` = '{$code}'");
+        $codeInfo = $codeSQL[0];
+
+        if(!is_array($codeInfo)) {
+            die($this->expiredorwrong());
+        }
+
+        // Update User
+
+        $table = array("verified" => 1);
+        $this->z->db->updateArray('users', $table, "WHERE `uid` = {$codeInfo['uid']}");
+        $this->z->db->deleteItem('email_code', 'code', $codeInfo['code']);
+
+        print "Success!";
     }
 
 }

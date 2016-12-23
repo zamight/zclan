@@ -82,7 +82,6 @@ class message
         }
 
 
-
         //TODO: Setup Markup For Displaying read Messages
 
         eval("\$content .= \"$message_index\";");

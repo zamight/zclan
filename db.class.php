@@ -5,10 +5,10 @@ class db
 
     private $dsn = 'mysql:dbname=zforums;host=localhost';
     private $dbuser = 'root';
-    private $dbpassword = 'mysql';
+    private $dbpassword = '';
     private $db = 'mysql';
 
-   function __construct()
+    function __construct()
     {
         try{
             $this->db = new PDO($this->dsn, $this->dbuser, $this->dbpassword);
@@ -17,8 +17,6 @@ class db
             echo 'Connection failed12: ' . $e->getMessage();
         }
     }
-
-	//Return a template layout.
 
     public function getUsernameByID($uid)
     {
@@ -29,10 +27,18 @@ class db
 
         return $result['display_name'];
     }
-	
-	//Return a Display Name by the uid.
 
-	public function getIDbyUsername($username)
+    public function getUserInfo($uid)
+    {
+        $query = $this->db->prepare("SELECT * FROM users WHERE uid = '{$uid}' LIMIT 1");
+        $query->execute();
+
+        $result = $query->fetch();
+
+        return $result;
+    }
+
+    public function getIDbyUsername($username)
     {
         $query = $this->db->prepare("SELECT uid FROM users WHERE display_name = '{$username}' LIMIT 1");
         $query->execute();
@@ -45,8 +51,6 @@ class db
         }
 
     }
-	
-	//Return a uid by a display name
 
     public function getIDbyEmail($email)
     {
@@ -62,9 +66,7 @@ class db
 
     }
 
-    //Return a uid by a display name
-
-	public function insertArray($table, $array)
+    public function insertArray($table, $array)
     {
         $sqlName = "INSERT INTO {$table} (";
         $sqlValue = ") VALUES (";
@@ -94,8 +96,6 @@ class db
         $query->execute();
         return $this->db->lastInsertId();
     }
-	
-	//Get One value from a table, colum, row
 
     public function updateArray($table, $array, $where)
     {
@@ -126,8 +126,6 @@ class db
 
         return $query->rowCount();
     }
-	
-	//Insert a array into the table. The name of index must match database table names.
 
     public function fetchRow($sql)
     {
@@ -148,7 +146,7 @@ class db
 
         return $result;
     }
-	
+
     public function generateUserHtmlRanks($userID = FALSE, $display = 10)
     {
         if(!userID) {
@@ -180,7 +178,7 @@ class db
 
         return $user_rank;
     }
-	
+
     public function getTemplate($templateName)
     {
         $query = $this->db->prepare("SELECT * FROM template WHERE name = '{$templateName}'");
@@ -191,7 +189,7 @@ class db
         return $result[2];
     }
 
-	public function fetchQuery($sql)
+    public function fetchQuery($sql)
     {
         $query = $this->db->prepare($sql);
         $query->execute();
@@ -201,7 +199,7 @@ class db
         return $result;
     }
 
-	public function fetchItem($select, $from, $where)
+    public function fetchItem($select, $from, $where)
 	{
 		$query = $this->db->prepare("SELECT {$select} FROM {$from} {$where}");
         $query->execute();
@@ -262,6 +260,14 @@ class db
         $query->bindParam(':value',$value);
         if(!$query->execute()) {
             die("Couldn't log out.");
+        }
+    }
+
+    public function deleteItems($table, $where) {
+        $sql = "DELETE FROM {$table} {$where}";
+        $query = $this->db->prepare($sql);
+        if(!$query->execute()) {
+            die("Couldn't delete.");
         }
     }
 }

@@ -4,6 +4,14 @@
 include(_DIR_ . "/trait/shoutbox.trait.php");
 include(_DIR_ . "/trait/header.trait.php");
 
+/**
+ * \brief Display forums.
+ * \details Handle the display of category, forum, threads, and posts.
+ * \details Handle the creation of threads and replies.
+ * \author Cody Wofford
+ * \version 0.0.1
+ * \bug N/A
+ */
 class forum
 {
 
@@ -14,7 +22,7 @@ class forum
     private $forumName = FALSE;
     private $threadTitle = FALSE;
     private $z = null;
-    
+
     public function __construct($z)
     {
         $this->z = $z;
@@ -22,6 +30,7 @@ class forum
 
     public function index()
     {
+
         $templateList = "forum_index";
         $templateListArray = explode(',', $templateList);
 
@@ -107,6 +116,7 @@ class forum
     {
         $name = str_replace('_', ' ', $this->forumName);
         $forumID = $this->z->db->fetchItem("id", "forum", "WHERE name = '{$name}'");
+        $time = time();
 
         $array = array(
             'forumID' => $forumID,
@@ -114,7 +124,9 @@ class forum
             'title' => $this->z->getInput('title'),
             'reply_count' => 0,
             'enabled' => 1,
-            'view_count' => 0
+            'view_count' => 0,
+            'time_created' => $time,
+            'lastReply' => $time
         );
 
         //Ight now Lets get the thread id.
@@ -136,6 +148,9 @@ class forum
         $this->z->db->addPostCountByUid($this->z->user->uid);
         $this->z->db->addReplyCountByThreadId($threadId);
         $this->z->db->insertArray('post', $array);
+
+        $updateThreadTime = array('lastReply' => $time);
+        $this->z->db->updateArray('threads', $updateThreadTime, "WHERE `id` = '{$threadId}'");
     }
 
     private function display_posts()
@@ -195,7 +210,7 @@ class forum
 
         foreach($forums as $forum) {
             //Lets Load Each Forum Now.
-            $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'] . ' ORDER BY `id` DESC';
+            $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'] . ' ORDER BY `lastReply` DESC';
             $threads = $this->z->db->fetchQuery($threads_sql);
             //die(print_r($threads));
             $thread_html = '';
@@ -215,7 +230,7 @@ class forum
 
     private function index_categorys($clanId = 1)
     {
-	//Load Layout.
+	    //Load Layout.
         $tpl = $this->z->db->getTemplate("forum_index_category");
         $tplForum = $this->z->db->getTemplate("forum_index_forum");
         $html = '';

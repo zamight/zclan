@@ -28,7 +28,7 @@ class clan
             $this->logout();
         }
         else {
-            $this->forum();
+            header("Location: {$this->z->site_urlc}forum");
         }
 
     }

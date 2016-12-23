@@ -1,4 +1,6 @@
 <?php
+error_reporting(0);
+
 /*
  *	Filename:		index.php
  *	Version:		0.0.1
@@ -21,7 +23,7 @@ date_default_timezone_set("UTC");
 
 $z = new z();
 $z->db = new db($z);
-$z->user = new user($z);
+//$z->user = new user($z);
 $z->site_default_name = "OLDRS Clan Management System";
 $z->site_url = 'http://localhost/zclan/';
 $z->site_urlc = 'http://localhost/zclan/';
@@ -50,13 +52,25 @@ else {
     $urlArray['clan_name'] = 'Site';
 }
 
+$z->url_param = $urlArray;
+
+// Then set the $clanID to to the clanNames ID.
+$clanName = strtolower($z->url_param['clan_name']);
+
+$clan = $z->db->fetchQuery("SELECT * FROM `clan` WHERE `name` = '{$clanName}'");
+$clan = $clan[0];
+
+$z->clanID = $clan['id'];
+$z->clanName = $clanName;
+
+$z->user = new user($z);
+
 //	Autoload Classes Function.
 function autoloader($class)
 {
     include _DIR_ . '/class/' . $class . '.class.php';
 }
 spl_autoload_register('autoloader');
-$z->url_param = $urlArray;
 //	Create class and load method
 
 $class = new $className($z);

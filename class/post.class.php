@@ -6,7 +6,7 @@ class post
     private $action = FALSE;
     private $postId = FALSE;
     private $z = null;
-    
+
     public function __construct($z)
     {
         $this->z = $z;

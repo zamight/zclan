@@ -1,7 +1,9 @@
 <?php
 
+
 class logout
 {
+
     private $z = null;
 
     public function __construct($z)
