@@ -12,25 +12,19 @@ class clan
     public function index()
     {
         $class = $this->z->url_param[0];
-        if($class == 'forum') {
+        if ($class == 'forum') {
             $this->forum();
-        }
-        elseif($class == 'message') {
+        } elseif ($class == 'message') {
             $this->message();
-        }
-        elseif($class == 'manage') {
+        } elseif ($class == 'manage') {
             $this->manage();
-        }
-        elseif($class == 'loot_highscores') {
+        } elseif ($class == 'loot_highscores') {
             $this->loot_highscores();
-        }
-        elseif($class == 'logout') {
+        } elseif ($class == 'logout') {
             $this->logout();
-        }
-        else {
+        } else {
             header("Location: {$this->z->site_urlc}forum");
         }
-
     }
 
     public function forum()
@@ -47,13 +41,15 @@ class clan
         $forum->index($z->getInput('c'));
     }
 
-    public function manage() {
+    public function manage()
+    {
         global $z;
         $manage = new manage($this->z);
         $manage->index($z->getInput('c'));
     }
 
-    public function loot_highscores() {
+    public function loot_highscores()
+    {
         global $z;
         $loot_highscores = new loot_highscores($this->z);
         $loot_highscores->index($z->getInput('c'));

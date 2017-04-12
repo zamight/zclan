@@ -5,15 +5,14 @@ class db
 
     private $dsn = 'mysql:dbname=zforums;host=localhost';
     private $dbuser = 'root';
-    private $dbpassword = '';
+    private $dbpassword = 'root';
     private $db = 'mysql';
 
-    function __construct()
+    public function __construct()
     {
-        try{
+        try {
             $this->db = new PDO($this->dsn, $this->dbuser, $this->dbpassword);
-        }
-        catch (PDOException $e) {
+        } catch (PDOException $e) {
             echo 'Connection failed12: ' . $e->getMessage();
         }
     }
@@ -43,13 +42,11 @@ class db
         $query = $this->db->prepare("SELECT uid FROM users WHERE display_name = '{$username}' LIMIT 1");
         $query->execute();
 
-        if($result = $query->fetch()) {
+        if ($result = $query->fetch()) {
             return $result['uid'];
-        }
-        else {
+        } else {
             return false;
         }
-
     }
 
     public function getIDbyEmail($email)
@@ -57,13 +54,11 @@ class db
         $query = $this->db->prepare("SELECT uid FROM users WHERE email = '{$email}' LIMIT 1");
         $query->execute();
 
-        if($result = $query->fetch()) {
+        if ($result = $query->fetch()) {
             return $result['uid'];
-        }
-        else {
+        } else {
             return false;
         }
-
     }
 
     public function insertArray($table, $array)
@@ -72,15 +67,12 @@ class db
         $sqlValue = ") VALUES (";
         $first = true;
         $counter = 1;
-        foreach($array as $name => $value)
-        {
-            if($first)
-            {
+        foreach ($array as $name => $value) {
+            if ($first) {
                 $sqlName .= $name;
                 $sqlValue .= "?";
                 $first = false;
-            }
-            else
+            } else
             {
                 $sqlName .= "," . $name;
                 $sqlValue .= "," . "?";
@@ -88,8 +80,7 @@ class db
         }
         $sql = $sqlName . $sqlValue . ")";
         $query = $this->db->prepare($sql);
-        foreach($array as $name => $value)
-        {
+        foreach ($array as $name => $value) {
             $query->bindParam($counter, $array[$name]);
             $counter++;
         }
@@ -103,16 +94,12 @@ class db
         $sqlName = "UPDATE {$table} SET ";
         $first = true;
 
-        foreach($array as $name => $value)
-        {
-            if($first)
-            {
+        foreach ($array as $name => $value) {
+            if ($first) {
                 $sqlName .= $name;
                 $sqlName .= "='" . $value . "'";
                 $first = false;
-            }
-            else
-            {
+            } else {
                 $sqlName .= ", " . $name;
                 $sqlName .= "= " . "'" . $value . "'";
             }
@@ -147,9 +134,9 @@ class db
         return $result;
     }
 
-    public function generateUserHtmlRanks($userID = FALSE, $display = 10)
+    public function generateUserHtmlRanks($userID = false, $display = 10)
     {
-        if(!userID) {
+        if (!userID) {
             false;
         }
 
@@ -164,7 +151,7 @@ class db
         $user_groups = $this->fetchQuery($user_group_sql);
 
         foreach ($user_groups as $user_group) {
-            if($counter > $display) {
+            if ($counter > $display) {
                 break;
             }
             $user_clan_group_color = $this->fetchItem("color", "clan", "WHERE `id` = " . $user_group['clan_id']);
@@ -200,14 +187,14 @@ class db
     }
 
     public function fetchItem($select, $from, $where)
-	{
-		$query = $this->db->prepare("SELECT {$select} FROM {$from} {$where}");
+    {
+        $query = $this->db->prepare("SELECT {$select} FROM {$from} {$where}");
         $query->execute();
 
         $result = $query->fetch();
 
         return $result[$select];
-	}
+    }
 
     public function updateLootPoints($solo, $assisted, $points, $user_group_id)
     {
@@ -225,7 +212,7 @@ class db
 
     public function addPostCountByUid($uid)
     {
-        if(!empty($uid)) {
+        if (!empty($uid)) {
             $query = $this->db->prepare("UPDATE users SET post_count = post_count + 1 WHERE uid = ?");
             $query->bindValue(1, $uid, PDO::PARAM_INT);
             $query->execute();
@@ -235,7 +222,7 @@ class db
 
     public function addThreadCountByUid($uid)
     {
-        if(!empty($uid)) {
+        if (!empty($uid)) {
             $query = $this->db->prepare("UPDATE users SET thread_count = thread_count + 1 WHERE uid = ?");
             $query->bindValue(1, $uid, PDO::PARAM_INT);
             $query->execute();
@@ -246,7 +233,7 @@ class db
 
     public function addReplyCountByThreadId($threadId)
     {
-        if(!empty($threadId)) {
+        if (!empty($threadId)) {
             $query = $this->db->prepare("UPDATE threads SET reply_count = reply_count + 1 WHERE id = ?");
             $query->bindValue(1, $threadId, PDO::PARAM_INT);
             $query->execute();
@@ -254,19 +241,21 @@ class db
         return false;
     }
 
-    public function deleteItem($table, $field, $value) {
+    public function deleteItem($table, $field, $value)
+    {
         $sql = "DELETE FROM {$table} WHERE {$field} = :value";
         $query = $this->db->prepare($sql);
-        $query->bindParam(':value',$value);
-        if(!$query->execute()) {
+        $query->bindParam(':value', $value);
+        if (!$query->execute()) {
             die("Couldn't log out.");
         }
     }
 
-    public function deleteItems($table, $where) {
+    public function deleteItems($table, $where)
+    {
         $sql = "DELETE FROM {$table} {$where}";
         $query = $this->db->prepare($sql);
-        if(!$query->execute()) {
+        if (!$query->execute()) {
             die("Couldn't delete.");
         }
     }

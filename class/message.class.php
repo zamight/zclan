@@ -14,6 +14,19 @@ class message
         $this->z = $z;
     }
 
+    /*
+     * TODO: IMPLEMENT sendMessage();
+     */
+
+    /*
+     * TODO: IMPLEMENT deleteMessage();
+     */
+
+    /*
+     * TODO: IMPLEMENT markAllMessagesRead();
+     */
+
+
     public function index()
     {
         $this->clanName = $this->z->url_param['clan_name'];
@@ -28,7 +41,8 @@ class message
         }
     }
 
-    private function showMessage() {
+    private function showMessage()
+    {
         // Initialize Template Variables
         $templateList = 'message_list,message_index';
         $templateListArray = explode(',', $templateList);
@@ -56,7 +70,7 @@ class message
         //Load All Msgs For User.
         $msgSql = $this->z->db->fetchQuery("SELECT * FROM `message` WHERE `toUid` = {$this->z->user->uid} ORDER BY `id` DESC");
 
-        foreach($msgSql as $message) {
+        foreach ($msgSql as $message) {
 
             //Has the user been cached?
             if(!array_key_exists($message['fromUid'], $userCache)) {
@@ -66,16 +80,15 @@ class message
             $author = $userCache[$message['fromUid']];
 
             // Truncate message preview if to long
-            if(strlen($message['message']) > 100) {
+            if (strlen($message['message']) > 100) {
                 $message['message'] = substr($message['message'], 0, 100) . "...";
             }
 
             //If Msg has been viewed.
-            if($message['viewed']) {
+            if ($message['viewed']) {
                 //Put In Read Category
                 eval("\$readTpl .= \"$message_list\";");
-            }
-            else {
+            } else {
                 //Put In Unread Category
                 eval("\$unreadTpl .= \"$message_list\";");
             }

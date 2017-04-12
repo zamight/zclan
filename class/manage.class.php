@@ -49,17 +49,27 @@ class manage
         print $this->build($this->clanName, $this->content);
     }
 
-    private function forum() {
+    private function forum()
+    {
         switch ($this->z->url_param[2]) {
             case "add":
-                $this->forum_add();
+                $this->forumAdd();
+                break;
+            case "edit":
+                $this->forumEdit();
                 break;
             default:
-                $this->forum_default();
+                $this->forumDefault();
         }
     }
 
-    private function forum_add() {
+    private function forumEdit()
+    {
+
+    }
+
+    private function forumAdd()
+    {
         $templateList = 'manage_forum_add_index,drop_box';
         $templateListArray = explode(',', $templateList);
 
@@ -69,12 +79,11 @@ class manage
         }
 
         // If The User Hit The Submit Button
-        if($this->z->getInput('forum_add_submitted')) {
 
+        if ($this->z->getInput('forum_add_submitted')) {
             // Check For Any Errors
             $warnings = $this->anyErrorsForForum();
-            if(!$warnings) {
-
+            if (!$warnings) {
                 $array = array(
                     'name' => $this->z->getInput('name'),
                     'description' => $this->z->getInput('description'),
@@ -88,8 +97,7 @@ class manage
                     $this->z->db->insertArray('category', $array);
                     header("Location: {$this->z->site_urlc}forum");
                     exit();
-                }
-                else {
+                } else {
                     $array['categoryID'] = $this->z->getInput('category');
                     $array['parentID'] = 0;
                     $array['thread_count'] = 0;
@@ -126,22 +134,22 @@ class manage
         $warning_tempalte = $this->z->db->getTemplate('warning_red_alert');
 
         // Check If Name Field Is Filled Out
-        if(empty($this->z->getInput('name'))) {
+        if (empty($this->z->getInput('name'))) {
             $warnings[] = "A name is required!";
         }
 
         // Check If Sort Is An Integer
-        if(!is_numeric($this->z->getInput('sort'))) {
+        if (!is_numeric($this->z->getInput('sort'))) {
             $warnings[] = "Sort ID must be an integer!";
         }
 
         //Is the email address valid?
-        if(!filter_var($this->z->getInput('banner_url'), FILTER_VALIDATE_URL)) {
+        if (!filter_var($this->z->getInput('banner_url'), FILTER_VALIDATE_URL)) {
             $warnings[] = "Banner URL is not a valid URL!";
         }
 
         //If there are warnings make the templates.
-        if(count($warnings) >= 1) {
+        if (count($warnings) >= 1) {
             $return = '';
             $warning = implode("<br />", $warnings);
             eval("\$return .= \"$warning_tempalte\";");
@@ -151,7 +159,8 @@ class manage
         return false;
     }
 
-    private function forum_default() {
+    private function forumDefault()
+    {
         $templateList = 'manage_forum_index,manage_forum_category,manage_forum_forum';
         $templateListArray = explode(',', $templateList);
 
@@ -168,7 +177,6 @@ class manage
 
         // Go Through Each $categories
         foreach ($categories as $category) {
-
             $manage_forum_forums = "";
 
             // Get Each Forum
@@ -186,37 +194,40 @@ class manage
         eval("\$this->content = \"$manage_forum_index\";");
     }
 
-    private function user() {
+    private function user()
+    {
         switch ($this->z->url_param[2]) {
             case "add":
-                $this->user_add();
+                $this->userAdd();
                 break;
             case "edit":
-                $this->user_edit();
+                $this->userEdit();
                 break;
             case "delete":
-                $this->user_delete();
+                $this->userDelete();
                 break;
             default:
-                $this->user_default();
+                $this->userDefault();
         }
     }
 
-    private function user_delete() {
+    private function userDelete()
+    {
         $editUid = $this->z->url_param[3];
 
         $this->z->db->deleteItems('users_clan_groups', "WHERE `uid` = '{$editUid}' AND `clan_id` = '{$this->clanID}'");
         header("Location: {$this->z->site_urlc}manage/user");
     }
 
-    private function user_edit() {
+    private function userEdit()
+    {
 
         $editUid = $this->z->url_param[3];
 
         $username = $this->z->db->getUsernameByID($editUid);
 
         // Save User
-        if($this->z->getInput('change_settings_btn')) {
+        if ($this->z->getInput('change_settings_btn')) {
             $this->user_edit_save();
             header("Location: {$this->z->site_urlc}manage/user");
             die();
@@ -234,7 +245,7 @@ class manage
         $drop_menu = '';
 
         // Go Though Each $forums
-        foreach($clanGroups as $clanGroup) {
+        foreach ($clanGroups as $clanGroup) {
             $value = $clanGroup['id'];
             $name = $clanGroup['name'];
             $checked = "";
@@ -252,21 +263,35 @@ class manage
         eval("\$this->content = \"$tpl\";");
     }
 
-    private function user_edit_save() {
+    private function userEditSave()
+    {
         $rankID = $this->z->getInput('rank');
         $editUid = $this->z->url_param[3];
-        $privilegeID =  $this->z->db->fetchItem("id", "privilege", "WHERE `clan_id` = '{$this->clanID}' AND clan_rank_id = '{$rankID}'");
+        $privilegeID =  $this->z->db->fetchItem(
+            "id",
+            "privilege",
+            "WHERE `clan_id` = '{$this->clanID}' AND clan_rank_id = '{$rankID}'"
+        );
 
         $array = array(
             'group_id' => $rankID,
             'privilege_id' => $privilegeID
         );
 
-        $this->z->db->updateArray('users_clan_groups', $array, "WHERE `uid` = '{$editUid}' AND clan_id = '{$this->z->clanID}'");
+        $this->z->db->updateArray(
+            'users_clan_groups',
+            $array,
+            "WHERE `uid` = '{$editUid}' AND clan_id = '{$this->z->clanID}'"
+        );
     }
 
-    private function user_add() {
-        $clanDefaultPrivID =  $this->z->db->fetchItem("id", "privilege", "WHERE `clan_id` = '{$this->clanID}' AND clan_rank_id = '3'");
+    private function userAdd()
+    {
+        $clanDefaultPrivID =  $this->z->db->fetchItem(
+            "id",
+            "privilege",
+            "WHERE `clan_id` = '{$this->clanID}' AND clan_rank_id = '3'"
+        );
 
         if ($this->z->url_param[3]) {
             $array = array(
@@ -302,7 +327,11 @@ class manage
 
         // Go Though Each $forums
         foreach ($users as $user) {
-            $rankID = $this->z->db->fetchItem("group_id", "users_clan_groups", "WHERE `uid` = '{$user['uid']}' AND clan_id = '{$this->clanID}'");
+            $rankID = $this->z->db->fetchItem(
+                "group_id",
+                "users_clan_groups",
+                "WHERE `uid` = '{$user['uid']}' AND clan_id = '{$this->clanID}'"
+            );
 
             if ($rankID != 2) {
                 $ranks = $this->z->db->generateUserHtmlRanks($user['uid'], 1);
@@ -313,7 +342,8 @@ class manage
         eval("\$this->content = \"$manage_user_add_list\";");
     }
 
-    private function user_default() {
+    private function userDefault()
+    {
         $templateList = 'manage_user_list,manage_user_block';
         $templateListArray = explode(',', $templateList);
 
@@ -331,7 +361,11 @@ class manage
         // Go Though Each $forums
         foreach ($clanMembers as $members) {
             // Get Each Forum
-            $rankID = $this->z->db->fetchItem("group_id", "users_clan_groups", "WHERE `uid` = '{$members['uid']}' AND clan_id = '{$this->clanID}'");
+            $rankID = $this->z->db->fetchItem(
+                "group_id",
+                "users_clan_groups",
+                "WHERE `uid` = '{$members['uid']}' AND clan_id = '{$this->clanID}'"
+            );
 
             if ($rankID != 2) {
                 $usersSQL = "SELECT uid,display_name,avatar FROM users WHERE uid = {$members['uid']}";
@@ -348,14 +382,15 @@ class manage
         eval("\$this->content = \"$manage_user_list\";");
     }
 
-    private function ban() {
-
+    private function ban()
+    {
     }
 
-    private function setting() {
+    private function setting()
+    {
 
-        if($this->z->getInput('change_settings_btn')) {
-            $this->setting_save();
+        if ($this->z->getInput('change_settings_btn')) {
+            $this->settingSave();
         }
 
         $warnings = '';
@@ -364,17 +399,15 @@ class manage
         $clan = $this->z->db->fetchQuery($clanSQL);
         $clan = $clan[0];
 
-        if($clan['owner_uid'] <= 0) {
+        if ($clan['owner_uid'] <= 0) {
             $clanOwner = "N/A";
-        }
-        else {
+        } else {
             $clanOwner = $this->z->db->getUsernameByID($clan['id']);
         }
 
-        if($clan['loot_hs_enabled']) {
+        if ($clan['loot_hs_enabled']) {
             $hs_checked_yes = "checked";
-        }
-        else {
+        } else {
             $hs_checked_no = "checked";
         }
 
@@ -382,7 +415,8 @@ class manage
         eval("\$this->content = \"$tpl\";");
     }
 
-    private function setting_save() {
+    private function settingSave()
+    {
         $array = array(
             'avatar' => $this->z->getInput('avatar'),
             'loot_hs_enabled' => $this->z->getInput('loot_highscore_enabled')
@@ -391,7 +425,7 @@ class manage
         $this->z->db->updateArray('clan', $array, "WHERE `id` = '{$this->z->clanID}'");
     }
 
-    private function setting_errors()
+    private function settingErrors()
     {
         $warnings = array();
         $warning_tempalte = $this->z->db->getTemplate('warning_red_alert');
@@ -403,20 +437,20 @@ class manage
             "item" => "Item"
         );
 
-        foreach($formItems as $names => $labels) {
+        foreach ($formItems as $names => $labels) {
             $$names = $this->z->getInput($names); //Set all as Variables.
-            if(!$$names) {
+            if (!$$names) {
                 $warnings[] = $labels . " field is required";
             }
         }
 
         //Does the username exist?
-        if(!$this->z->db->getUsernameByID($user)) {
+        if (!$this->z->db->getUsernameByID($user)) {
             $warnings[] = "User doesn't exist.";
         }
 
         //If there are warnings make the templates.
-        if(count($warnings) >= 1) {
+        if (count($warnings) >= 1) {
             $return = '';
             $warning = implode("<br />", $warnings);
             eval("\$return .= \"$warning_tempalte\";");
@@ -426,7 +460,8 @@ class manage
         return false;
     }
 
-    private function navigation() {
+    private function navigation()
+    {
         $tpl = $this->z->db->getTemplate("manage_navigation_index");
         eval("\$this->content = \"$tpl\";");
     }

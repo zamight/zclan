@@ -32,7 +32,8 @@ class register
         }
     }
 
-    private function register() {
+    private function register()
+    {
         $templateList = 'register_index,register_success';
         $templateListArray = explode(',', $templateList);
 
@@ -47,13 +48,12 @@ class register
 
         //Verify Registeration
         $warnings = '';
-        if($this->z->getInput('registeration_submitted')) {
+        if ($this->z->getInput('registeration_submitted')) {
             $warnings = $this->anyRegisterationWarnings();
             if (!$warnings) {
-                if($this->createRegisteration()) {
+                if ($this->createRegisteration()) {
                     $display = $register_success;
-                }
-                else {
+                } else {
                     //$display = $this->z->db->db->errorInfo();
                 }
             }
@@ -69,40 +69,40 @@ class register
         $warnings = array();
         $warning_tempalte = $this->z->db->getTemplate('warning_red_alert');
 
-        foreach($this->formItems as $names => $labels) {
+        foreach ($this->formItems as $names => $labels) {
             $$names = $this->z->getInput($names); //Set all as Variables.
-            if(!$$names) {
+            if (!$$names) {
                 $warnings[] = $labels . " Field Is Required";
             }
         }
 
         //Does the username exist?
-        if($this->z->db->getIDbyUsername($username)) {
+        if ($this->z->db->getIDbyUsername($username)) {
             $warnings[] = "Username already taken";
         }
         
         //Does the email exist?
-        if($this->z->db->getIDbyEmail($email)) {
+        if ($this->z->db->getIDbyEmail($email)) {
             $warnings[] = "Email already taken";
         }
 
         //Is the email address valid?
-        if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $warnings[] = "Invalid email address";
         }
 
         //Is the email address long enough?
-        if(strlen($password) < 6) {
+        if (strlen($password) < 6) {
             $warnings[] = "Password is not long enough";
         }
 
         //Do Passwords Match?
-        if($password != $retype_password) {
+        if ($password != $retype_password) {
             $warnings[] = "Passwords do not match";
         }
 
         //If there are warnings make the templates.
-        if(count($warnings) >= 1) {
+        if (count($warnings) >= 1) {
             $return = '';
             $warning = implode("<br />", $warnings);
             eval("\$return .= \"$warning_tempalte\";");
@@ -131,7 +131,7 @@ class register
 
         $uid = $this->z->db->insertArray('users', $insertArray);
 
-        if($uid) {
+        if ($uid) {
             $code = $this->createVerifyCode($uid);
             $this->mailCode($this->z->getInput('email'), $code);
             return true;
@@ -140,7 +140,8 @@ class register
         return false;
     }
 
-    private function createVerifyCode($uid) {
+    private function createVerifyCode($uid)
+    {
         $code = md5($uid . time());
         $insertArray = array(
             'uid' => $uid,
@@ -151,11 +152,13 @@ class register
         return $code;
     }
 
-    private function expiredorwrong() {
+    private function expiredorwrong()
+    {
         print "Incorrect token or expired.";
     }
 
-    private function mailCode($email, $code) {
+    private function mailCode($email, $code)
+    {
         $to      = $email;
         $subject = 'OLDRS.CC Verify Email';
         $message = "Congratulations for registering at oldrs.cc! To complete your registeration 
@@ -169,10 +172,11 @@ class register
         mail($to, $subject, $message, $headers);
     }
 
-    private function verifyCode() {
+    private function verifyCode()
+    {
         $code = $this->z->url_param[2];
 
-        if(!$code) {
+        if (!$code) {
             die($this->expiredorwrong());
         }
 
@@ -180,7 +184,7 @@ class register
         $codeSQL = $this->z->db->fetchQuery("SELECT * FROM `email_code` WHERE `code` = '{$code}'");
         $codeInfo = $codeSQL[0];
 
-        if(!is_array($codeInfo)) {
+        if (!is_array($codeInfo)) {
             die($this->expiredorwrong());
         }
 

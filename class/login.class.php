@@ -12,14 +12,14 @@ class login
 
     public function index()
     {
-        if($this->z->getInput("submit")) {
+        if ($this->z->getInput("submit")) {
             $this->authenticate();
         }
 
         // Navigate User To Correct Method
         switch ($this->z->url_param[1]) {
             default:
-                $this->login_form();
+                $this->loginForm();
         }
     }
 
@@ -31,11 +31,9 @@ class login
 
         $authorizeFetch = $this->z->db->fetchRow("SELECT * FROM users WHERE display_name = '{$username}'");
 
-        if(isset($authorizeFetch))
-        {
-
+        if (isset($authorizeFetch)) {
             //Verify Password
-            if(password_verify($password, $authorizeFetch['password'])) {
+            if (password_verify($password, $authorizeFetch['password'])) {
                 //Get Session Key
                 $session_key = session_id();
 
@@ -55,39 +53,33 @@ class login
         }
     }
 
-    private function login_form() {
+    private function loginForm()
+    {
         $templateList = 'login_index,login_index_form,login_index_loggedin,login_index_incorrect';
         $templateListArray = explode(',', $templateList);
 
         $html = "";
 
         //Setup Template Variables.
-        foreach($templateListArray as $templateName)
-        {
+        foreach ($templateListArray as $templateName) {
             $$templateName = $this->z->db->getTemplate($templateName);
         }
 
         $this->z->runPlugin("login_index_start");
 
 
-        if(empty($_POST['submit']))
-        {
+        if (empty($_POST['submit'])) {
             $login_index_incorrect = "";
-        }
-        else
-        {
+        } else {
             eval("\$login_index_incorrect = \"$login_index_incorrect\";");
         }
 
-        if($this->z->user->isLoggedIn)
-        {
+        if ($this->z->user->isLoggedIn) {
             //If User is logged in
             //Send User to defualt forums.
             header("Location: {$this->z->site_url}forum");
             exit();
-        }
-        else
-        {
+        } else {
             eval("\$login_index_forms = \"$login_index_form\";");
         }
 

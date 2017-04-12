@@ -12,15 +12,16 @@ include(_DIR_ . "/trait/header.trait.php");
  * \version 0.0.1
  * \bug N/A
  */
+
 class forum
 {
 
     use shoutbox;
     use header;
 
-    public $clan_name = FALSE;
-    private $forumName = FALSE;
-    private $threadTitle = FALSE;
+    public $clan_name = fase;
+    private $forumName = false;
+    private $threadTitle = false;
     private $z = null;
 
     public function __construct($z)
@@ -51,12 +52,12 @@ class forum
          // If the clan cannot be found
          // Then run the invalid_clan function.
 
-        if(!$clan) {
+        if (!$clan) {
             $this->invalid_clan();
         }
 
         //Was a new shout submitted?
-        if($this->z->getInput('shout_new')) {
+        if ($this->z->getInput('shout_new')) {
             $this->shoutbox_add_message($clan['id']);
         }
 
@@ -71,13 +72,13 @@ class forum
 
         $this->clan_name = str_replace('_', ' ', $this->forumName);
 
-        if($this->z->getInput('title') && $this->z->getInput('message')) {
+        if ($this->z->getInput('title') && $this->z->getInput('message')) {
             $this->create_thread();
         }
 
 
-        if($this->z->getInput('message')) {
-            if($this->threadTitle) {
+        if ($this->z->getInput('message')) {
+            if ($this->threadTitle) {
                 $threadID = explode('-', $this->threadTitle);
                 $threadID = $threadID[1];
                 $this->create_reply($threadID);
@@ -85,15 +86,13 @@ class forum
         }
 
 
-        if(!empty($this->threadTitle)) {
+        if (!empty($this->threadTitle)) {
             //Display Threads
             $body = $this->display_posts();
-        }
-        elseif(!empty($this->forumName)) {
+        } elseif (!empty($this->forumName)) {
             //Display Forum Threads
             $body = $this->index_forum($clan['id']);
-        }
-        else {
+        } else {
             //Display Categories
             $body = $this->index_categorys($clan['id']);
         }
@@ -107,12 +106,11 @@ class forum
         print $this->build($clanName, $content);
     }
 
-    private function invalid_clan()
+    private function invalidClan()
     {
-
     }
 
-    private function create_thread()
+    private function createThread()
     {
         $name = str_replace('_', ' ', $this->forumName);
         $forumID = $this->z->db->fetchItem("id", "forum", "WHERE name = '{$name}'");
@@ -132,10 +130,10 @@ class forum
         //Ight now Lets get the thread id.
         $thread = $this->z->db->insertArray('threads', $array);
         $this->z->db->addThreadCountByUid($this->z->user->uid);
-        $this->create_reply($thread);
+        $this->createReply($thread);
     }
 
-    private function create_reply($threadId)
+    private function createReply($threadId)
     {
         $time = time();
         $array = array(
@@ -153,7 +151,7 @@ class forum
         $this->z->db->updateArray('threads', $updateThreadTime, "WHERE `id` = '{$threadId}'");
     }
 
-    private function display_posts()
+    private function displayPosts()
     {
         //Include the BBCode Engine
         include(_DIR_ . "/nbbc-1.4.5/nbbc.php");
@@ -182,11 +180,11 @@ class forum
         //Post SQL and Loop.
         $posts = $this->z->db->fetchQuery("SELECT * FROM `post` WHERE `threadID` = '{$threadId}'");
 
-        foreach($posts as $post) {
+        foreach ($posts as $post) {
             $users = $this->z->db->fetchRow("SELECT * FROM `users` WHERE `uid` = '{$post['uid']}'");
             $ranks = $this->z->db->generateUserHtmlRanks($post['uid']);
             $post['content'] = $bbcode->Parse($post['content']);
-            $post['date'] = date("g:i jS D, Y",$post['date']);
+            $post['date'] = date("g:i jS D, Y", $post['date']);
             eval("\$post_html .= \"$forum_posts_list_tpl\";");
         }
 
@@ -194,7 +192,7 @@ class forum
         return $html;
     }
 
-    private function index_forum($clanId = 1)
+    private function indexForum($clanId = 1)
     {
         //Load Layout.
         $tpl = $this->z->db->getTemplate("forum_threads");
@@ -208,17 +206,18 @@ class forum
         $forum_sql = 'SELECT * FROM forum WHERE `name` = "' . $this->clan_name . '" AND `clanID` = ' . $clanId;
         $forums = $this->z->db->fetchQuery($forum_sql);
 
-        foreach($forums as $forum) {
+        foreach ($forums as $forum) {
             //Lets Load Each Forum Now.
             $threads_sql = 'SELECT * FROM threads WHERE forumID = ' . $forum['id'] . ' ORDER BY `lastReply` DESC';
             $threads = $this->z->db->fetchQuery($threads_sql);
             //die(print_r($threads));
             $thread_html = '';
 
-            foreach($threads as $thread) {
+            foreach ($threads as $thread) {
                 //$thread['title'] = $bbcode->Parse($thread['title']);
                 //$thread['conent'] = $bbcode->Parse($thread['conent']);
-                $thread['url'] = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $thread['title']) . '-' . $thread['id'];
+                $thread['url'] = $_SERVER['REQUEST_URI'] . '/'
+                    . str_replace(' ', '_', $thread['title']) . '-' . $thread['id'];
                 eval("\$thread_html .= \"$tplThread\";");
             }
 
@@ -228,9 +227,9 @@ class forum
         return $html;
     }
 
-    private function index_categorys($clanId = 1)
+    private function indexCategorys($clanId = 1)
     {
-	    //Load Layout.
+        //Load Layout.
         $tpl = $this->z->db->getTemplate("forum_index_category");
         $tplForum = $this->z->db->getTemplate("forum_index_forum");
         $html = '';
@@ -240,14 +239,14 @@ class forum
         $category_sql = 'SELECT * FROM category WHERE clanID = ' . $clanId;
         $categorys = $this->z->db->fetchQuery($category_sql);
 
-        foreach($categorys as $category) {
+        foreach ($categorys as $category) {
             //Lets Load Each Forum Now.
             $forum_sql = 'SELECT * FROM forum WHERE categoryID = ' . $category['id'] . ' AND clanID = ' . $clanId;
             $forums = $this->z->db->fetchQuery($forum_sql);
 
             $forum_html = '';
 
-            foreach($forums as $forum) {
+            foreach ($forums as $forum) {
                 //Clean Url.
                 $url = $_SERVER['REQUEST_URI'] . '/' . str_replace(' ', '_', $forum['name']);
                 eval("\$forum_html .= \"$tplForum\";");

@@ -2,7 +2,7 @@
 
 include(_DIR_ . "/trait/header.trait.php");
 
-class loot_highscores
+class lootHighscores
 {
     use header;
 
@@ -26,7 +26,7 @@ class loot_highscores
         // Navigate User To Correct Method
         switch ($this->z->url_param[1]) {
             case "add":
-                $this->add_item();
+                $this->addItem();
                 break;
             case "drop_log":
                 $this->showUserLoots();
@@ -35,13 +35,13 @@ class loot_highscores
                 $this->deleteLoot();
                 break;
             default:
-                $this->display_highscore();
+                $this->displayHighscore();
         }
 
         print $this->build($this->clanName, $this->content);
     }
 
-    private function add_item() {
+    private function addItem() {
         if (!$this->z->user->isAdmin) {
             die("You don't have privilege.");
         }
@@ -57,7 +57,7 @@ class loot_highscores
         // If submitted check for errors.
         //Verify Registeration
         $warnings = '';
-        if($this->z->getInput('add_loot')) {
+        if ($this->z->getInput('add_loot')) {
             $warnings = $this->anyLootErrors();
             if (!$warnings) {
                 $this->createLoot();
@@ -91,20 +91,20 @@ class loot_highscores
         "item" => "Item"
         );
 
-        foreach($formItems as $names => $labels) {
+        foreach ($formItems as $names => $labels) {
             $$names = $this->z->getInput($names); //Set all as Variables.
-            if(!$$names) {
+            if (!$$names) {
                 $warnings[] = $labels . " field is required";
             }
         }
 
         //Does the username exist?
-        if(!$this->z->db->getUsernameByID($user)) {
+        if (!$this->z->db->getUsernameByID($user)) {
             $warnings[] = "User doesn't exist.";
         }
 
         //If there are warnings make the templates.
-        if(count($warnings) >= 1) {
+        if (count($warnings) >= 1) {
             $return = '';
             $warning = implode("<br />", $warnings);
             eval("\$return .= \"$warning_tempalte\";");
@@ -114,11 +114,16 @@ class loot_highscores
         return false;
     }
 
-    private function showUserLoots() {
+    private function showUserLoots()
+    {
         $userID = $this->z->db->getIDbyUsername($this->z->url_param[2]);
         $username = $this->z->db->getUsernameByID($userID);
 
-        $user_clan_groupID = $this->z->db->fetchItem('id', 'users_clan_groups', "WHERE `uid` = '{$userID}' AND  `clan_id` = '{$this->clanID}'");
+        $user_clan_groupID = $this->z->db->fetchItem(
+            'id',
+            'users_clan_groups',
+            "WHERE `uid` = '{$userID}' AND  `clan_id` = '{$this->clanID}'"
+        );
 
         $tpl_index = $this->z->db->getTemplate('loot_highscores_drop_log');
         $loot = $this->z->db->getTemplate('loot_highscore_list_user_drops');
@@ -136,10 +141,10 @@ class loot_highscores
         $userLootsSQL = "SELECT * FROM loot_logs WHERE `user_clan_groups_id` = '{$user_clan_groupID}' ORDER BY `id` DESC";
         $items = $this->z->db->fetchQuery($userLootsSQL);
 
-        foreach($items as $item) {
+        foreach ($items as $item) {
             $itemName = '';
-            foreach($itemsJSON as $name) {
-                if($name['id'] == $item['item_id']) {
+            foreach ($itemsJSON as $name) {
+                if ($name['id'] == $item['item_id']) {
                     $itemName = $name['name'];
                     break;
                 }
@@ -148,12 +153,11 @@ class loot_highscores
             eval("\$loot_table .= \"$loot\";");
         }
 
-
         eval("\$this->content = \"$tpl_index\";");
-
     }
 
-    private function deleteLoot() {
+    private function deleteLoot()
+    {
         //Get Loot ID
         $id = $this->z->url_param[2];
 
@@ -164,20 +168,17 @@ class loot_highscores
         $assisted = 0;
         $points = 0;
 
-        if($loot['type'] == 2) {
+        if ($loot['type'] == 2) {
             $assisted = $loot['value'];
-        }
-        else {
+        } else {
             $solo = $loot['value'];
         }
 
-        if($loot['value'] >= 1000000*61) {
+        if ($loot['value'] >= 1000000*61) {
             $points = 3;
-        }
-        elseif($loot['value'] >= 1000000*31) {
+        } elseif ($loot['value'] >= 1000000*31) {
             $points = 2;
-        }
-        elseif($loot['value'] >= 1000000) {
+        } elseif ($loot['value'] >= 1000000) {
             $points = 1;
         }
 
@@ -199,7 +200,11 @@ class loot_highscores
         $item_value = $this->z->getInput('item_value');
         $loot_type = $this->z->getInput('loot_type');
 
-        $user_clan_groups_id = $this->z->db->fetchItem("id", "users_clan_groups", "WHERE uid = '{$userID}' AND clan_id = '{$this->clanID}'");
+        $user_clan_groups_id = $this->z->db->fetchItem(
+            "id",
+            "users_clan_groups",
+            "WHERE uid = '{$userID}' AND clan_id = '{$this->clanID}'"
+        );
 
         $insertArray = array(
             'user_clan_groups_id' => $user_clan_groups_id,
@@ -208,24 +213,21 @@ class loot_highscores
             'type' => $loot_type
         );
 
-        if($this->z->db->insertArray('loot_logs', $insertArray)) {
+        if ($this->z->db->insertArray('loot_logs', $insertArray)) {
             $solo = $assisted = $points = 0;
 
             // If Type is assisted
-            if($loot_type == 2) {
+            if ($loot_type == 2) {
                 $assisted = $this->z->getInput('item_value');
-            }
-            else {
+            } else {
                 $solo = $this->z->getInput('item_value');
             }
 
-            if($item_value >= 1000000*61) {
+            if ($item_value >= 1000000*61) {
                 $points = 3;
-            }
-            elseif($item_value >= 1000000*31) {
+            } elseif($item_value >= 1000000*31) {
                 $points = 2;
-            }
-            elseif($item_value >= 1000000) {
+            } elseif($item_value >= 1000000) {
                 $points = 1;
             }
 
@@ -237,7 +239,7 @@ class loot_highscores
         return false;
     }
 
-    private function display_highscore() {
+    private function displayHighscore() {
         $templateList = 'loot_highscores_index,loot_highscores_table';
         $templateListArray = explode(',', $templateList);
 
@@ -248,17 +250,14 @@ class loot_highscores
 
         $orderBy = "total";
 
-        if($this->z->url_param[1] == "sort") {
-            if($this->z->url_param[2] == "points") {
+        if ($this->z->url_param[1] == "sort") {
+            if ($this->z->url_param[2] == "points") {
                 $orderBy = "points";
-            }
-            elseif($this->z->url_param[2] == "assisted") {
+            } elseif ($this->z->url_param[2] == "assisted") {
                 $orderBy = "assisted";
-            }
-            elseif($this->z->url_param[2] == "solo") {
+            } elseif ($this->z->url_param[2] == "solo") {
                 $orderBy = "solo";
-            }
-            elseif($this->z->url_param[2] == "points") {
+            } elseif ($this->z->url_param[2] == "points") {
                 $orderBy = "points";
             }
         }
@@ -282,17 +281,15 @@ class loot_highscores
         eval("\$this->content = \"$loot_highscores_index\";");
     }
 
-    private function formate_numbers($n) {
-        if($n < 1000) {
+    private function formateNumbers($n)
+    {
+        if ($n < 1000) {
             $n_format = number_format($n);
-        }
-        elseif($n < 1000000) {
+        } elseif ($n < 1000000) {
             $n_format = number_format($n / 1000, 0) . 'K';
-        }
-        elseif($n < 1000000000) {
+        } elseif ($n < 1000000000) {
             $n_format = number_format($n / 1000000, 0) . 'M';
-        }
-        else {
+        } else {
             $n_format = number_format($n / 1000000000, 0) . 'B';
         }
 

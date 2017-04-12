@@ -3,8 +3,8 @@
 class post
 {
 
-    private $action = FALSE;
-    private $postId = FALSE;
+    private $action = false;
+    private $postId = false;
     private $z = null;
 
     public function __construct($z)
@@ -14,7 +14,6 @@ class post
 
     public function index()
     {
-
     }
 
     public function edit()
@@ -33,7 +32,7 @@ class post
         $this->action = $this->z->url_param[1];
         $this->postId = $this->z->url_param[2];
 
-        if($this->postUpdated()) {
+        if ($this->postUpdated()) {
             die("updated");
         }
         
@@ -47,20 +46,16 @@ class post
 
     private function postUpdated()
     {
+        $postUpdated = false;
         //Was Form submitted?
-        if($this->z->getInput('message'))
-        {
+        if ($this->z->getInput('message')) {
             $table = array("content" => $this->z->getInput('message'));
-            if($this->z->db->updateArray('post', $table, "WHERE `id` = {$this->postId} AND `uid` = {$this->z->user->uid}") > 0)
-            {
-                return true;
-            }
+
+            $postUpdated = $this->z->db->updateArray('post', $table, "WHERE `id` = {$this->postId} AND `uid` = {$this->z->user->uid}") > 0;
         }
 
-        return false;
-
+        return $postUpdated;
     }
-
 }
 
 
